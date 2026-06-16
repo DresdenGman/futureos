@@ -153,4 +153,67 @@ describe("POST /api/forecasts", () => {
     expect(res.status).toBe(200)
     expect(body.data.id).toBe("fc-anon")
   })
+
+  it("returns 422 when all evidence is LOW relevance", async () => {
+    const allLow = {
+      ...validBody,
+      evidence: [
+        {
+          title: "Test",
+          url: "https://example.com",
+          source: "example.com",
+          summary: "Summary.",
+          direction: "NEUTRAL" as const,
+          credibility: "MEDIUM" as const,
+          relevance: "LOW" as const,
+          reasoning: "Irrelevant.",
+        },
+        {
+          title: "Test 2",
+          url: "https://example2.com",
+          source: "example2.com",
+          summary: "Summary 2.",
+          direction: "NEUTRAL" as const,
+          credibility: "MEDIUM" as const,
+          relevance: "LOW" as const,
+          reasoning: "Also irrelevant.",
+        },
+      ],
+    }
+
+    const req = buildRequest(allLow)
+    const res = await POST(req)
+    const body = await res.json()
+
+    expect(res.status).toBe(422)
+    expect(body.success).toBe(false)
+    expect(body.error).toContain("sufficiently relevant")
+    expect(mockCreateForecast).not.toHaveBeenCalled()
+  })
+
+  it("allows save with MEDIUM relevance evidence", async () => {
+    const withMedium = {
+      ...validBody,
+      evidence: [
+        {
+          title: "Test",
+          url: "https://example.com",
+          source: "example.com",
+          summary: "Summary.",
+          direction: "NEUTRAL" as const,
+          credibility: "MEDIUM" as const,
+          relevance: "MEDIUM" as const,
+          reasoning: "Relevant background.",
+        },
+      ],
+    }
+
+    const req = buildRequest(withMedium)
+    const res = await POST(req)
+    const body = await res.json()
+
+    expect(res.status).toBe(200)
+    expect(body.data.id).toBe("fc-1")
+    expect(mockCreateForecast).toHaveBeenCalledTimes(1)
+  })
 })

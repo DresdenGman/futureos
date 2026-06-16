@@ -211,4 +211,21 @@ describe("POST /api/ai/evidence", () => {
     expect(text).not.toContain("127.0.0.1")
     expect(text).not.toContain("caller")
   })
+
+  it("returns 422 for insufficient evidence", async () => {
+    const { InsufficientEvidenceError } = await import(
+      "@/lib/ai/evidence/schema"
+    )
+    mockGatherEvidence.mockRejectedValue(
+      new InsufficientEvidenceError("NO_RELEVANT_EVIDENCE")
+    )
+
+    const req = buildRequest(validBody)
+    const res = await POST(req)
+    const body = await res.json()
+
+    expect(res.status).toBe(422)
+    expect(body.success).toBe(false)
+    expect(body.error).toContain("sufficiently relevant")
+  })
 })

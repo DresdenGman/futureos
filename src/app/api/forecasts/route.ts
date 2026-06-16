@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { createForecastSchema } from "@/lib/forecasts/schema"
 import { createForecast } from "@/lib/forecasts/create-forecast"
+import { InsufficientEvidenceError } from "@/lib/ai/evidence/schema"
 
 export async function POST(request: Request) {
   try {
@@ -24,6 +25,20 @@ export async function POST(request: Request) {
       )
     }
 
+    const hasUsableEvidence = parsed.data.evidence.some(
+      (e) => e.relevance === "MEDIUM" || e.relevance === "HIGH"
+    )
+    if (!hasUsableEvidence) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "No sufficiently relevant evidence was found. Try making the question more specific.",
+        },
+        { status: 422 }
+      )
+    }
+
     const session = await auth()
     const userId = session?.user?.id ?? null
 
@@ -31,6 +46,17 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true, data: result })
   } catch (error: unknown) {
+    if (error instanceof InsufficientEvidenceError) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "No sufficiently relevant evidence was found. Try making the question more specific.",
+        },
+        { status: 422 }
+      )
+    }
+
     if (error instanceof Error) {
       if (error.message.includes("not found")) {
         console.error(`[forecasts] ${error.message}`)
