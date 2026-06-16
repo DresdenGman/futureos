@@ -74,10 +74,9 @@ export default async function HomePage() {
         <Card className="transition-shadow hover:shadow-md sm:col-span-2 lg:col-span-1">
           <CardHeader>
             <TrendingUp className="h-10 w-10 text-primary mb-2" />
-            <CardTitle className="text-lg">Track Probabilities</CardTitle>
+            <CardTitle className="text-lg">Measure Accuracy</CardTitle>
             <CardDescription>
-              Monitor probability changes over time as new evidence emerges.
-              Settle predictions and measure accuracy.
+              Settle forecasts and evaluate their accuracy with Brier Scores.
             </CardDescription>
           </CardHeader>
         </Card>
