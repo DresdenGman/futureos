@@ -104,8 +104,16 @@ Output a JSON object with these exact fields:
     throw new Error(`AI returned invalid probability estimate: ${errors}`)
   }
 
-  if (allNeutral && parsed.data.confidence !== "LOW") {
-    return { ...parsed.data, confidence: "LOW" as const }
+  if (allNeutral) {
+    const note =
+      "No usable evidence directly supports or opposes the outcome. The estimate relies primarily on base rates and general reasoning."
+    return {
+      ...parsed.data,
+      confidence: "LOW" as const,
+      reasoning: parsed.data.reasoning.endsWith(note)
+        ? parsed.data.reasoning
+        : parsed.data.reasoning + "\n\n" + note,
+    }
   }
 
   return parsed.data

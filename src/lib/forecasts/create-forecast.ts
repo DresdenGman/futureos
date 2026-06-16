@@ -1,5 +1,6 @@
 import prisma from "@/lib/db"
 import type { CreateForecastInput } from "./schema"
+import { getUsableEvidence } from "@/lib/ai/evidence/gather-evidence"
 
 export async function createForecast(
   input: CreateForecastInput,
@@ -17,8 +18,9 @@ export async function createForecast(
     throw new Error(`Domain "${input.domain}" not found`)
   }
 
+  const usableEvidence = getUsableEvidence(input.evidence)
+
   return prisma.$transaction(async (tx) => {
-    // 1. Create Forecast
     const forecast = await tx.forecast.create({
       data: {
         title: input.structuredQuestion,
@@ -44,10 +46,10 @@ export async function createForecast(
       },
     })
 
-    // 2. Create Evidence records
-    if (input.evidence.length > 0) {
+    // 2. Create Evidence records (only MEDIUM/HIGH relevance)
+    if (usableEvidence.length > 0) {
       await tx.evidence.createMany({
-        data: input.evidence.map((e) => ({
+        data: usableEvidence.map((e) => ({
           forecastId: forecast.id,
           title: e.title,
           summary: e.summary,
@@ -70,7 +72,7 @@ export async function createForecast(
     })
 
     console.log(
-      `[forecast] Created forecast id=${forecast.id} with ${input.evidence.length} evidence items`
+      `[forecast] Created forecast id=${forecast.id} with ${usableEvidence.length} evidence items`
     )
 
     return { id: forecast.id }

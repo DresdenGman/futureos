@@ -236,6 +236,9 @@ describe("estimateProbability", () => {
     })
 
     expect(result.confidence).toBe("LOW")
-    expect(result.probability).not.toBe(0.5) // not forced to 50%
+    expect(result.probability).not.toBe(0.5)
+    expect(result.reasoning).toContain(
+      "No usable evidence directly supports or opposes"
+    )
   })
 })
