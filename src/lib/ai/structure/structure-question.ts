@@ -1,6 +1,10 @@
 import { generateObject } from "ai"
 import { getModel } from "@/lib/ai/client"
 import {
+  withTimeout,
+  DEEPSEEK_TIMEOUT_MS,
+} from "@/lib/utils/timeout"
+import {
   structuredQuestionSchema,
   type StructuredQuestion,
 } from "./schema"
@@ -54,13 +58,16 @@ Output a JSON object with these exact fields:
 - "isForecastable" (boolean): true if the question can be verified
 - "notForecastableReason" (string, optional): Explain why not forecastable if false`
 
-  const { object } = await generateObject({
-    model: getModel(),
-    output: "no-schema",
-    system: SYSTEM_PROMPT,
-    prompt,
-    temperature: 0.3,
-  })
+  const { object } = await withTimeout("deepseek", DEEPSEEK_TIMEOUT_MS, (signal) =>
+    generateObject({
+      model: getModel(),
+      output: "no-schema",
+      system: SYSTEM_PROMPT,
+      prompt,
+      temperature: 0.3,
+      abortSignal: signal,
+    })
+  )
 
   const parsed = structuredQuestionSchema.safeParse(object)
   if (!parsed.success) {

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { evidenceRequestSchema } from "@/lib/ai/evidence/schema"
 import { gatherEvidence } from "@/lib/ai/evidence/gather-evidence"
+import { ExternalServiceTimeoutError } from "@/lib/utils/timeout"
 
 export async function POST(request: Request) {
   try {
@@ -37,6 +38,20 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true, data: result })
   } catch (error: unknown) {
+    if (error instanceof ExternalServiceTimeoutError) {
+      console.error(
+        `[evidence] ${error.service} timeout after ${error.timeoutMs}ms`
+      )
+      const message =
+        error.service === "tavily"
+          ? "The search service timed out. Please try again."
+          : "The AI service timed out. Please try again."
+      return NextResponse.json(
+        { success: false, error: message },
+        { status: 504 }
+      )
+    }
+
     if (error instanceof Error) {
       if (error.message.includes("TAVILY_API_KEY")) {
         console.error("[evidence] Tavily API key not configured")

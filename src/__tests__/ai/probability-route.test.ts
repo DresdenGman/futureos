@@ -130,6 +130,23 @@ describe("POST /api/ai/probability", () => {
     expect(body.error).toBe("AI service is temporarily unavailable. Please try again later.")
   })
 
+  it("returns 504 for DeepSeek timeout", async () => {
+    const { ExternalServiceTimeoutError } = await import(
+      "@/lib/utils/timeout"
+    )
+    mockEstimateProbability.mockRejectedValue(
+      new ExternalServiceTimeoutError("deepseek", 60000)
+    )
+
+    const req = buildRequest(validBody)
+    const res = await POST(req)
+    const body = await res.json()
+
+    expect(res.status).toBe(504)
+    expect(body.success).toBe(false)
+    expect(body.error).toBe("The AI service timed out. Please try again.")
+  })
+
   it("rejects out-of-bounds probability via Zod schema (tested at schema level)", () => {
     expect(() =>
       probabilityEstimateSchema.parse({ ...validResult, probability: 1.5 })

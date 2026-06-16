@@ -1,6 +1,10 @@
 import { generateObject } from "ai"
 import { getModel } from "@/lib/ai/client"
 import {
+  withTimeout,
+  DEEPSEEK_TIMEOUT_MS,
+} from "@/lib/utils/timeout"
+import {
   probabilityEstimateSchema,
   type ProbabilityRequest,
   type ProbabilityEstimate,
@@ -69,13 +73,16 @@ Output a JSON object with these exact fields:
 - "uncertaintyFactors" (string[]): Sources of uncertainty
 - "recommendedResolutionCriteria" (string, optional)`
 
-  const { object } = await generateObject({
-    model: getModel(),
-    output: "no-schema",
-    system: SYSTEM_PROMPT,
-    prompt,
-    temperature: 0.3,
-  })
+  const { object } = await withTimeout("deepseek", DEEPSEEK_TIMEOUT_MS, (signal) =>
+    generateObject({
+      model: getModel(),
+      output: "no-schema",
+      system: SYSTEM_PROMPT,
+      prompt,
+      temperature: 0.3,
+      abortSignal: signal,
+    })
+  )
 
   const parsed = probabilityEstimateSchema.safeParse(object)
   if (!parsed.success) {

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { probabilityRequestSchema } from "@/lib/ai/probability/schema"
 import { estimateProbability } from "@/lib/ai/probability/estimate-probability"
+import { ExternalServiceTimeoutError } from "@/lib/utils/timeout"
 
 export async function POST(request: Request) {
   try {
@@ -37,6 +38,16 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true, data: result })
   } catch (error: unknown) {
+    if (error instanceof ExternalServiceTimeoutError) {
+      console.error(
+        `[probability] ${error.service} timeout after ${error.timeoutMs}ms`
+      )
+      return NextResponse.json(
+        { success: false, error: "The AI service timed out. Please try again." },
+        { status: 504 }
+      )
+    }
+
     if (error instanceof Error) {
       if (error.message.includes("DEEPSEEK_API_KEY")) {
         console.error("[probability] DeepSeek API key not configured")

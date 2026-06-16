@@ -2,6 +2,11 @@ import { generateObject } from "ai"
 import { getModel } from "@/lib/ai/client"
 import { tavilySearch, type TavilyResult } from "@/lib/search/tavily"
 import {
+  withTimeout,
+  DEEPSEEK_TIMEOUT_MS,
+  TAVILY_TIMEOUT_MS,
+} from "@/lib/utils/timeout"
+import {
   evidenceResultSchema,
   type EvidenceRequest,
   type EvidenceResult,
@@ -38,9 +43,11 @@ function formatSearchResults(results: TavilyResult[]): string {
 export async function gatherEvidence(
   input: EvidenceRequest
 ): Promise<EvidenceResult> {
-  // 1. Search
+  // 1. Search (Tavily timeout)
   const searchQuery = `${input.structuredQuestion} ${input.domain}`
-  const searchResults = await tavilySearch(searchQuery)
+  const searchResults = await withTimeout("tavily", TAVILY_TIMEOUT_MS, (signal) =>
+    tavilySearch(searchQuery, signal)
+  )
 
   // 2. Format results for AI
   const formattedResults = formatSearchResults(searchResults)
@@ -61,13 +68,17 @@ Output a JSON object with these exact fields:
 - "searchSummary" (string): Overall summary of search results
 - "limitations" (string[]): Gaps or limitations in the evidence`
 
-  const { object } = await generateObject({
-    model: getModel(),
-    output: "no-schema",
-    system: SYSTEM_PROMPT,
-    prompt,
-    temperature: 0.3,
-  })
+  // 3. AI analysis (DeepSeek timeout)
+  const { object } = await withTimeout("deepseek", DEEPSEEK_TIMEOUT_MS, (signal) =>
+    generateObject({
+      model: getModel(),
+      output: "no-schema",
+      system: SYSTEM_PROMPT,
+      prompt,
+      temperature: 0.3,
+      abortSignal: signal,
+    })
+  )
 
   const parsed = evidenceResultSchema.safeParse(object)
   if (!parsed.success) {

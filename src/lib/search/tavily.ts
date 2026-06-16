@@ -13,7 +13,10 @@ interface TavilyResponse {
   query: string
 }
 
-export async function tavilySearch(query: string): Promise<TavilyResult[]> {
+export async function tavilySearch(
+  query: string,
+  signal?: AbortSignal
+): Promise<TavilyResult[]> {
   const apiKey = process.env.TAVILY_API_KEY
   if (!apiKey) {
     throw new Error(
@@ -34,6 +37,7 @@ export async function tavilySearch(query: string): Promise<TavilyResult[]> {
       search_depth: "advanced",
       max_results: 8,
     }),
+    signal,
   })
 
   if (!res.ok) {
