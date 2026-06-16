@@ -8,8 +8,10 @@ import {
 } from "@/lib/utils/timeout"
 import {
   evidenceResultSchema,
+  InsufficientEvidenceError,
   type EvidenceRequest,
   type EvidenceResult,
+  type EvidenceItem,
 } from "./schema"
 
 const SYSTEM_PROMPT = `You are a rigorous evidence analyst for FutureOS, an AI-powered probabilistic forecasting platform.
@@ -20,16 +22,20 @@ CRITICAL RULES:
 1. ONLY use the search results provided. Do NOT fabricate any information.
 2. Do NOT predict the outcome. Do NOT give probabilities or conclusions.
 3. Each evidence item MUST come from a provided search result URL.
-4. For each result, determine:
+4. Only return sources genuinely relevant to the exact forecast question and resolution criteria.
+5. Omit irrelevant, duplicate, unverifiable, or generic sources that do not inform this specific forecast.
+6. For each retained result, determine:
    - direction: Does it SUPPORT the event happening, OPPOSE it, or is it NEUTRAL?
    - credibility: How trustworthy is the source? (LOW / MEDIUM / HIGH)
    - relevance: How directly related to the forecast question? (LOW / MEDIUM / HIGH)
    - reasoning: Explain WHY this evidence is relevant to the question.
-5. Write a concise summary (1-3 sentences) for each piece of evidence.
-6. In searchSummary, summarize what the overall search landscape looks like (evidence coverage, quality, recency).
-7. In limitations, note any gaps: missing data, old information, conflicting evidence, lack of authoritative sources, etc.
-8. If search results are insufficient, note this clearly in limitations. Do not invent evidence.
-9. Never fabricate URLs, dates, or source names.`
+7. NEUTRAL means relevant background evidence that neither supports nor opposes the event.
+8. NEUTRAL must NOT be used for irrelevant search results.
+9. If none of the search results are sufficiently relevant, return an empty evidence array.
+10. Never invent an evidence item when search results are empty.
+11. Write a concise summary (1-3 sentences) for each retained piece of evidence.
+12. In searchSummary, summarize what the overall search landscape looks like.
+13. In limitations, note any gaps: missing data, lack of authoritative sources, etc.`
 
 function formatSearchResults(results: TavilyResult[]): string {
   return results
@@ -40,6 +46,14 @@ function formatSearchResults(results: TavilyResult[]): string {
     .join("\n\n---\n\n")
 }
 
+export function getUsableEvidence(
+  evidence: EvidenceItem[]
+): EvidenceItem[] {
+  return evidence.filter(
+    (e) => e.relevance === "MEDIUM" || e.relevance === "HIGH"
+  )
+}
+
 export async function gatherEvidence(
   input: EvidenceRequest
 ): Promise<EvidenceResult> {
@@ -48,6 +62,10 @@ export async function gatherEvidence(
   const searchResults = await withTimeout("tavily", TAVILY_TIMEOUT_MS, (signal) =>
     tavilySearch(searchQuery, signal)
   )
+
+  if (searchResults.length === 0) {
+    throw new InsufficientEvidenceError("NO_SEARCH_RESULTS")
+  }
 
   // 2. Format results for AI
   const formattedResults = formatSearchResults(searchResults)
@@ -88,5 +106,14 @@ Output a JSON object with these exact fields:
     throw new Error(`AI returned invalid evidence: ${errors}`)
   }
 
-  return parsed.data
+  const usable = getUsableEvidence(parsed.data.evidence)
+  if (usable.length === 0) {
+    throw new InsufficientEvidenceError("NO_RELEVANT_EVIDENCE")
+  }
+
+  return {
+    evidence: usable,
+    searchSummary: parsed.data.searchSummary,
+    limitations: parsed.data.limitations,
+  }
 }

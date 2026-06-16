@@ -18,6 +18,7 @@ vi.mock("@/lib/ai/client", () => ({
 import { tavilySearch } from "@/lib/search/tavily"
 import { generateObject } from "ai"
 import { gatherEvidence } from "@/lib/ai/evidence/gather-evidence"
+import { InsufficientEvidenceError } from "@/lib/ai/evidence/schema"
 
 const mockTavilySearch = vi.mocked(tavilySearch)
 const mockGenerateObject = vi.mocked(generateObject)
@@ -132,22 +133,17 @@ describe("gatherEvidence", () => {
     ).rejects.toThrow("AI service error")
   })
 
-  it("handles empty search results gracefully", async () => {
+  it("throws InsufficientEvidenceError on empty Tavily results", async () => {
     mockTavilySearch.mockResolvedValueOnce([])
-    mockGenerateObject.mockResolvedValueOnce({
-      object: {
-        evidence: [],
-        searchSummary: "No relevant search results found.",
-        limitations: ["Search returned zero results", "Cannot provide evidence"],
-      },
-    } as never)
 
     await expect(
       gatherEvidence({
         structuredQuestion: "Will something happen?",
         domain: "technology",
       })
-    ).rejects.toThrow("AI returned invalid evidence")
+    ).rejects.toThrow(InsufficientEvidenceError)
+
+    expect(mockGenerateObject).not.toHaveBeenCalled()
   })
 
   it("passes AbortSignal to Tavily fetch via signal param", async () => {

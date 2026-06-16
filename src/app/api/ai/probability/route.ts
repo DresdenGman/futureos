@@ -4,6 +4,7 @@ import { estimateProbability } from "@/lib/ai/probability/estimate-probability"
 import { ExternalServiceTimeoutError } from "@/lib/utils/timeout"
 import { resolveCallerKey } from "@/lib/utils/identity"
 import { checkRateLimit, ENDPOINT_WEIGHTS } from "@/lib/utils/ratelimit"
+import { InsufficientEvidenceError } from "@/lib/ai/evidence/schema"
 
 export async function POST(request: Request) {
   try {
@@ -55,6 +56,20 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true, data: result })
   } catch (error: unknown) {
+    if (error instanceof InsufficientEvidenceError) {
+      console.error(
+        `[probability] Insufficient evidence: ${error.reason}`
+      )
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "No sufficiently relevant evidence was found. Try making the question more specific.",
+        },
+        { status: 422 }
+      )
+    }
+
     if (error instanceof ExternalServiceTimeoutError) {
       console.error(
         `[probability] ${error.service} timeout after ${error.timeoutMs}ms`

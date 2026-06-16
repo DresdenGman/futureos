@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { evidenceRequestSchema } from "@/lib/ai/evidence/schema"
+import { evidenceRequestSchema, InsufficientEvidenceError } from "@/lib/ai/evidence/schema"
 import { gatherEvidence } from "@/lib/ai/evidence/gather-evidence"
 import { ExternalServiceTimeoutError } from "@/lib/utils/timeout"
 import { resolveCallerKey } from "@/lib/utils/identity"
@@ -55,6 +55,20 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true, data: result })
   } catch (error: unknown) {
+    if (error instanceof InsufficientEvidenceError) {
+      console.error(
+        `[evidence] Insufficient evidence: ${error.reason}`
+      )
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "No sufficiently relevant evidence was found. Try making the question more specific.",
+        },
+        { status: 422 }
+      )
+    }
+
     if (error instanceof ExternalServiceTimeoutError) {
       console.error(
         `[evidence] ${error.service} timeout after ${error.timeoutMs}ms`

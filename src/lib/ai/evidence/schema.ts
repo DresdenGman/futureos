@@ -1,5 +1,19 @@
 import { z } from "zod"
 
+export class InsufficientEvidenceError extends Error {
+  public readonly reason: "NO_SEARCH_RESULTS" | "NO_RELEVANT_EVIDENCE"
+
+  constructor(reason: "NO_SEARCH_RESULTS" | "NO_RELEVANT_EVIDENCE") {
+    const message =
+      reason === "NO_SEARCH_RESULTS"
+        ? "No search results were found."
+        : "No sufficiently relevant evidence was found."
+    super(message)
+    this.name = "InsufficientEvidenceError"
+    this.reason = reason
+  }
+}
+
 /**
  * Input schema for the evidence gathering API.
  */
@@ -33,7 +47,7 @@ export type EvidenceItem = z.infer<typeof evidenceItemSchema>
  * Full evidence output schema from AI.
  */
 export const evidenceResultSchema = z.object({
-  evidence: z.array(evidenceItemSchema).min(1).max(8),
+  evidence: z.array(evidenceItemSchema),
   searchSummary: z.string().min(1),
   limitations: z.array(z.string()),
 })

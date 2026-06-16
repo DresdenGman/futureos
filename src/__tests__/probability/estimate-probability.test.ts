@@ -19,6 +19,7 @@ vi.mock("@/lib/search/tavily", () => ({
 
 import { generateObject } from "ai"
 import { estimateProbability } from "@/lib/ai/probability/estimate-probability"
+import { InsufficientEvidenceError } from "@/lib/ai/evidence/schema"
 
 const mockGenerateObject = vi.mocked(generateObject)
 
@@ -154,5 +155,87 @@ describe("estimateProbability", () => {
       unknown
     >
     expect(callArgs.abortSignal).toBeInstanceOf(AbortSignal)
+  })
+
+  it("rejects when all evidence is LOW relevance", async () => {
+    const allLow = [
+      { ...validEvidence[0], relevance: "LOW" as const },
+      { ...validEvidence[1], relevance: "LOW" as const },
+    ]
+
+    await expect(
+      estimateProbability({
+        structuredQuestion: "Will something happen?",
+        domain: "technology",
+        evidence: allLow,
+      })
+    ).rejects.toThrow(InsufficientEvidenceError)
+
+    expect(mockGenerateObject).not.toHaveBeenCalled()
+  })
+
+  it("rejects empty evidence array", async () => {
+    await expect(
+      estimateProbability({
+        structuredQuestion: "Will something happen?",
+        domain: "technology",
+        evidence: [],
+      })
+    ).rejects.toThrow(InsufficientEvidenceError)
+
+    expect(mockGenerateObject).not.toHaveBeenCalled()
+  })
+
+  it("filters LOW and keeps MEDIUM/HIGH on mixed evidence", async () => {
+    const mixed = [
+      { ...validEvidence[0], relevance: "LOW" as const },
+      { ...validEvidence[1], relevance: "MEDIUM" as const },
+    ]
+    mockGenerateObject.mockResolvedValueOnce({
+      object: validEstimate,
+    } as never)
+
+    await estimateProbability({
+      structuredQuestion: "Will something happen?",
+      domain: "technology",
+      evidence: mixed,
+    })
+
+    expect(mockGenerateObject).toHaveBeenCalledTimes(1)
+    const callArgs = mockGenerateObject.mock.calls[0][0] as Record<
+      string,
+      unknown
+    >
+    const prompt = callArgs.prompt as string
+    // Only MEDIUM item should appear, LOW item filtered out
+    expect(prompt).toContain("AI industry slows down")
+    expect(prompt).not.toContain("OpenAI plans major release")
+  })
+
+  it("forces LOW confidence when all usable evidence is NEUTRAL", async () => {
+    const allNeutral = [
+      {
+        ...validEvidence[0],
+        direction: "NEUTRAL" as const,
+        relevance: "MEDIUM" as const,
+      },
+      {
+        ...validEvidence[1],
+        direction: "NEUTRAL" as const,
+        relevance: "HIGH" as const,
+      },
+    ]
+    mockGenerateObject.mockResolvedValueOnce({
+      object: { ...validEstimate, confidence: "MEDIUM" as const },
+    } as never)
+
+    const result = await estimateProbability({
+      structuredQuestion: "Will something happen?",
+      domain: "technology",
+      evidence: allNeutral,
+    })
+
+    expect(result.confidence).toBe("LOW")
+    expect(result.probability).not.toBe(0.5) // not forced to 50%
   })
 })

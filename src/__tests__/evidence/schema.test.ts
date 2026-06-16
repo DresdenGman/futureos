@@ -157,13 +157,13 @@ describe("evidenceResultSchema", () => {
     expect(result.success).toBe(true)
   })
 
-  it("rejects empty evidence array", () => {
+  it("accepts empty evidence array (AI may return none)", () => {
     const result = evidenceResultSchema.safeParse({
       evidence: [],
       searchSummary: "Nothing found.",
       limitations: ["No results"],
     })
-    expect(result.success).toBe(false)
+    expect(result.success).toBe(true)
   })
 
   it("rejects empty searchSummary", () => {
@@ -209,5 +209,47 @@ describe("evidenceResultSchema", () => {
     if (result.success) {
       expect((result.data as Record<string, unknown>).probability).toBeUndefined()
     }
+  })
+})
+
+import { getUsableEvidence } from "@/lib/ai/evidence/gather-evidence"
+import type { EvidenceItem } from "@/lib/ai/evidence/schema"
+
+describe("getUsableEvidence", () => {
+  const makeItem = (relevance: EvidenceItem["relevance"]): EvidenceItem =>
+    ({
+      title: "test",
+      url: "https://example.com",
+      source: "example.com",
+      summary: "test",
+      direction: "NEUTRAL" as const,
+      credibility: "MEDIUM" as const,
+      relevance,
+      reasoning: "test",
+    }) as EvidenceItem
+
+  it("filters out LOW relevance evidence", () => {
+    const result = getUsableEvidence([
+      makeItem("LOW"),
+      makeItem("MEDIUM"),
+      makeItem("HIGH"),
+      makeItem("LOW"),
+    ])
+    expect(result).toHaveLength(2)
+    expect(result.every((e) => e.relevance !== "LOW")).toBe(true)
+  })
+
+  it("returns empty array when all are LOW", () => {
+    const result = getUsableEvidence([makeItem("LOW"), makeItem("LOW")])
+    expect(result).toHaveLength(0)
+  })
+
+  it("preserves MEDIUM/HIGH NEUTRAL evidence", () => {
+    const items = [
+      { ...makeItem("MEDIUM"), direction: "NEUTRAL" as const },
+      { ...makeItem("HIGH"), direction: "NEUTRAL" as const },
+    ]
+    const result = getUsableEvidence(items)
+    expect(result).toHaveLength(2)
   })
 })

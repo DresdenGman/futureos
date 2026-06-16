@@ -9,6 +9,7 @@ import {
   type ProbabilityRequest,
   type ProbabilityEstimate,
 } from "./schema"
+import { InsufficientEvidenceError } from "@/lib/ai/evidence/schema"
 
 const SYSTEM_PROMPT = `You are a cautious probabilistic forecasting analyst for FutureOS, an AI-powered forecasting platform.
 
@@ -25,6 +26,7 @@ CRITICAL RULES:
 8. You MUST list your key assumptions and uncertainty factors.
 9. Avoid over-confidence. Good forecasters calibrate their uncertainty.
 10. Focus on the question's specific criteria, not general trends.
+11. If all usable evidence is NEUTRAL (relevant background without directional support), use appropriate base rates and reasoning. Confidence MUST be LOW. Explicitly state that there is no directional supporting or opposing evidence. Do NOT default mechanically to 50%.
 
 For each probability estimate, think about:
 - What EVENTS would need to happen for a "yes" outcome?
@@ -46,7 +48,17 @@ function formatEvidenceForPrompt(
 export async function estimateProbability(
   input: ProbabilityRequest
 ): Promise<ProbabilityEstimate> {
-  const evidenceText = formatEvidenceForPrompt(input.evidence)
+  const usableEvidence = input.evidence.filter(
+    (e) => e.relevance === "MEDIUM" || e.relevance === "HIGH"
+  )
+
+  if (usableEvidence.length === 0) {
+    throw new InsufficientEvidenceError("NO_RELEVANT_EVIDENCE")
+  }
+
+  const allNeutral = usableEvidence.every((e) => e.direction === "NEUTRAL")
+
+  const evidenceText = formatEvidenceForPrompt(usableEvidence)
   const limitationsText = input.limitations?.length
     ? `\nKnown Limitations:\n${input.limitations.map((l) => `- ${l}`).join("\n")}`
     : ""
@@ -90,6 +102,10 @@ Output a JSON object with these exact fields:
       .map((i) => `${i.path.join(".")}: ${i.message}`)
       .join("; ")
     throw new Error(`AI returned invalid probability estimate: ${errors}`)
+  }
+
+  if (allNeutral && parsed.data.confidence !== "LOW") {
+    return { ...parsed.data, confidence: "LOW" as const }
   }
 
   return parsed.data
