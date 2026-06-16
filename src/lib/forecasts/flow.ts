@@ -1,17 +1,20 @@
+import type { EvidenceResult } from "@/lib/ai/evidence/schema"
+import type { ProbabilityEstimate } from "@/lib/ai/probability/schema"
+
 /**
- * Minimal flow control helpers for the create-forecast wizard.
- * These predicates mirror the inline guards in src/app/create/page.tsx
- * to enable direct testing of flow transitions without component rendering.
+ * Flow control guards used by the create-forecast wizard.
+ * These are the single source of truth for step transitions;
+ * src/app/create/page.tsx imports and calls them directly.
  */
 
-export function canEstimateProbability(evidence: unknown): boolean {
+export function canEstimateProbability(
+  evidence: EvidenceResult | null
+): evidence is EvidenceResult {
   return evidence != null
 }
 
 export function canSaveForecast(
-  estimate: unknown,
-  evidence: unknown,
-  structured: unknown
-): boolean {
-  return estimate != null && evidence != null && structured != null
+  estimate: ProbabilityEstimate | null
+): estimate is ProbabilityEstimate {
+  return estimate != null
 }

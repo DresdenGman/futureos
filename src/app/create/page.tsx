@@ -41,6 +41,7 @@ import type { EvidenceResult } from "@/lib/ai/evidence/schema"
 import type { ProbabilityEstimate } from "@/lib/ai/probability/schema"
 import { ProbabilityCard } from "@/components/probability/probability-card"
 import { CreateStepper } from "@/components/create/create-stepper"
+import { canEstimateProbability, canSaveForecast } from "@/lib/forecasts/flow"
 
 const formSchema = z.object({
   originalQuestion: z
@@ -168,7 +169,7 @@ export default function CreatePage() {
 
   // --- Step C: Estimate Probability ---
   async function onEstimateProbability() {
-    if (!evidence) return
+    if (!canEstimateProbability(evidence)) return
 
     setIsEstimating(true)
     setEstimateError(null)
@@ -204,7 +205,7 @@ export default function CreatePage() {
 
   // --- Save Forecast ---
   async function onSaveForecast() {
-    if (!estimate || !evidence || !structured) return
+    if (!canSaveForecast(estimate) || !evidence || !structured) return
 
     setIsSaving(true)
     setEstimateError(null)

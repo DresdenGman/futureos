@@ -6,36 +6,37 @@ import {
 
 describe("canEstimateProbability", () => {
   it("returns true when evidence is present", () => {
-    expect(canEstimateProbability({ some: "data" })).toBe(true)
+    expect(
+      canEstimateProbability({
+        evidence: [],
+        searchSummary: "",
+        limitations: [],
+      })
+    ).toBe(true)
   })
 
   it("returns false when evidence is null (422 error)", () => {
     expect(canEstimateProbability(null)).toBe(false)
   })
-
-  it("returns false when evidence is undefined", () => {
-    expect(canEstimateProbability(undefined)).toBe(false)
-  })
 })
 
 describe("canSaveForecast", () => {
-  it("returns true when all three are present", () => {
-    expect(canSaveForecast({}, {}, {})).toBe(true)
+  it("returns true when estimate is present", () => {
+    expect(
+      canSaveForecast({
+        probability: 0.5,
+        confidence: "LOW",
+        summary: "",
+        reasoning: "",
+        keyDrivers: [],
+        counterArguments: [],
+        assumptions: [],
+        uncertaintyFactors: [],
+      })
+    ).toBe(true)
   })
 
-  it("returns false when estimate is null", () => {
-    expect(canSaveForecast(null, { evidence: [] }, { question: "Q" })).toBe(
-      false
-    )
-  })
-
-  it("returns false when evidence is null", () => {
-    expect(canSaveForecast({ probability: 0.5 }, null, { question: "Q" })).toBe(
-      false
-    )
-  })
-
-  it("returns false when structured is null", () => {
-    expect(canSaveForecast({}, {}, null)).toBe(false)
+  it("returns false when estimate is null (422 error)", () => {
+    expect(canSaveForecast(null)).toBe(false)
   })
 })
