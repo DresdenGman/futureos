@@ -4,8 +4,22 @@ import { probabilityEstimateSchema } from "@/lib/ai/probability/schema"
 
 const mockEstimateProbability = vi.fn()
 
+const { mockCheckRateLimit, mockResolveCallerKey } = vi.hoisted(() => ({
+  mockCheckRateLimit: vi.fn(),
+  mockResolveCallerKey: vi.fn(),
+}))
+
 vi.mock("@/lib/ai/probability/estimate-probability", () => ({
   estimateProbability: (...args: unknown[]) => mockEstimateProbability(...args),
+}))
+
+vi.mock("@/lib/utils/ratelimit", () => ({
+  checkRateLimit: mockCheckRateLimit,
+  ENDPOINT_WEIGHTS: { structure: 1, evidence: 2, probability: 1 },
+}))
+
+vi.mock("@/lib/utils/identity", () => ({
+  resolveCallerKey: mockResolveCallerKey,
 }))
 
 import { POST } from "@/app/api/ai/probability/route"
@@ -52,6 +66,12 @@ describe("POST /api/ai/probability", () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockEstimateProbability.mockResolvedValue(validResult)
+    mockResolveCallerKey.mockResolvedValue("ip:127.0.0.1")
+    mockCheckRateLimit.mockReturnValue({
+      allowed: true,
+      remaining: 10,
+      resetAt: Date.now() + 900_000,
+    })
   })
 
   it("returns 400 for empty body", async () => {
@@ -154,5 +174,25 @@ describe("POST /api/ai/probability", () => {
     expect(() =>
       probabilityEstimateSchema.parse({ ...validResult, probability: -0.1 })
     ).toThrow()
+  })
+
+  it("returns 429 when rate limited", async () => {
+    mockCheckRateLimit.mockReturnValue({
+      allowed: false,
+      remaining: 0,
+      resetAt: Date.now() + 300_000,
+      retryAfterSeconds: 300,
+      reason: "caller",
+    } as unknown as ReturnType<typeof mockCheckRateLimit>)
+
+    const req = buildRequest(validBody)
+    const res = await POST(req)
+    const body = await res.json()
+
+    expect(res.status).toBe(429)
+    expect(res.headers.get("Retry-After")).toBe("300")
+    expect(res.headers.get("Cache-Control")).toBe("no-store")
+    expect(body.success).toBe(false)
+    expect(mockEstimateProbability).not.toHaveBeenCalled()
   })
 })

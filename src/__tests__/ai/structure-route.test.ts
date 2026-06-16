@@ -2,8 +2,22 @@ import { describe, it, expect, vi, beforeEach } from "vitest"
 
 const mockStructureQuestion = vi.fn()
 
+const { mockCheckRateLimit, mockResolveCallerKey } = vi.hoisted(() => ({
+  mockCheckRateLimit: vi.fn(),
+  mockResolveCallerKey: vi.fn(),
+}))
+
 vi.mock("@/lib/ai/structure/structure-question", () => ({
   structureQuestion: (...args: unknown[]) => mockStructureQuestion(...args),
+}))
+
+vi.mock("@/lib/utils/ratelimit", () => ({
+  checkRateLimit: mockCheckRateLimit,
+  ENDPOINT_WEIGHTS: { structure: 1, evidence: 2, probability: 1 },
+}))
+
+vi.mock("@/lib/utils/identity", () => ({
+  resolveCallerKey: mockResolveCallerKey,
 }))
 
 import { POST } from "@/app/api/ai/structure/route"
@@ -34,6 +48,12 @@ describe("POST /api/ai/structure", () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockStructureQuestion.mockResolvedValue(validResult)
+    mockResolveCallerKey.mockResolvedValue("ip:127.0.0.1")
+    mockCheckRateLimit.mockReturnValue({
+      allowed: true,
+      remaining: 10,
+      resetAt: Date.now() + 900_000,
+    })
   })
 
   it("returns 400 for empty body", async () => {
@@ -146,5 +166,43 @@ describe("POST /api/ai/structure", () => {
     expect(res.status).toBe(504)
     expect(body.success).toBe(false)
     expect(body.error).toBe("The AI service timed out. Please try again.")
+  })
+
+  it("returns 429 when rate limited", async () => {
+    mockCheckRateLimit.mockReturnValue({
+      allowed: false,
+      remaining: 0,
+      resetAt: Date.now() + 300_000,
+      retryAfterSeconds: 300,
+      reason: "caller",
+    } as unknown as ReturnType<typeof mockCheckRateLimit>)
+
+    const req = buildRequest(validBody)
+    const res = await POST(req)
+    const body = await res.json()
+
+    expect(res.status).toBe(429)
+    expect(res.headers.get("Retry-After")).toBe("300")
+    expect(res.headers.get("Cache-Control")).toBe("no-store")
+    expect(body.success).toBe(false)
+    expect(body.error).toBe("Too many AI requests. Please try again later.")
+    expect(mockStructureQuestion).not.toHaveBeenCalled()
+  })
+
+  it("invalid input returns 400 before rate limit check", async () => {
+    mockCheckRateLimit.mockReturnValue({
+      allowed: false,
+      remaining: 0,
+      resetAt: Date.now() + 300_000,
+      retryAfterSeconds: 300,
+      reason: "caller",
+    } as unknown as ReturnType<typeof mockCheckRateLimit>)
+
+    const req = buildRequest({ originalQuestion: "", domain: "finance" })
+    const res = await POST(req)
+    const body = await res.json()
+
+    expect(res.status).toBe(400)
+    expect(body.success).toBe(false)
   })
 })

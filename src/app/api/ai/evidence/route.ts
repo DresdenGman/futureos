@@ -2,6 +2,8 @@ import { NextResponse } from "next/server"
 import { evidenceRequestSchema } from "@/lib/ai/evidence/schema"
 import { gatherEvidence } from "@/lib/ai/evidence/gather-evidence"
 import { ExternalServiceTimeoutError } from "@/lib/utils/timeout"
+import { resolveCallerKey } from "@/lib/utils/identity"
+import { checkRateLimit, ENDPOINT_WEIGHTS } from "@/lib/utils/ratelimit"
 
 export async function POST(request: Request) {
   try {
@@ -25,6 +27,21 @@ export async function POST(request: Request) {
     }
 
     const input = parsed.data
+
+    const callerKey = await resolveCallerKey(request)
+    const limitResult = checkRateLimit(callerKey, ENDPOINT_WEIGHTS.evidence)
+    if (!limitResult.allowed) {
+      return NextResponse.json(
+        { success: false, error: "Too many AI requests. Please try again later." },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(limitResult.retryAfterSeconds),
+            "Cache-Control": "no-store",
+          },
+        }
+      )
+    }
 
     console.log(
       `[evidence] Gathering evidence for question length=${input.structuredQuestion.length} domain=${input.domain}`

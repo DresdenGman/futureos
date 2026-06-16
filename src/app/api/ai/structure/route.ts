@@ -2,6 +2,8 @@ import { NextResponse } from "next/server"
 import { structureRequestSchema } from "@/lib/ai/structure/schema"
 import { structureQuestion } from "@/lib/ai/structure/structure-question"
 import { ExternalServiceTimeoutError } from "@/lib/utils/timeout"
+import { resolveCallerKey } from "@/lib/utils/identity"
+import { checkRateLimit, ENDPOINT_WEIGHTS } from "@/lib/utils/ratelimit"
 
 export async function POST(request: Request) {
   try {
@@ -21,6 +23,21 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { success: false, error: `Validation error: ${errors}` },
         { status: 400 }
+      )
+    }
+
+    const callerKey = await resolveCallerKey(request)
+    const limitResult = checkRateLimit(callerKey, ENDPOINT_WEIGHTS.structure)
+    if (!limitResult.allowed) {
+      return NextResponse.json(
+        { success: false, error: "Too many AI requests. Please try again later." },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(limitResult.retryAfterSeconds),
+            "Cache-Control": "no-store",
+          },
+        }
       )
     }
 
