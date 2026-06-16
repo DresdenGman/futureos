@@ -99,6 +99,11 @@ export function resetRateLimitStore() {
   store.clear()
 }
 
+/** Returns the current number of entries in the rate limit store. For testing only. */
+export function getStoreSize(): number {
+  return store.size
+}
+
 export const ENDPOINT_WEIGHTS: Record<string, number> = {
   structure: 1,
   evidence: 2,

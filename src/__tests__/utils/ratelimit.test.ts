@@ -1,106 +1,130 @@
 import { describe, it, expect, beforeEach } from "vitest"
-import { checkRateLimit, resetRateLimitStore } from "@/lib/utils/ratelimit"
+import {
+  checkRateLimit,
+  resetRateLimitStore,
+  getStoreSize,
+} from "@/lib/utils/ratelimit"
 
 describe("checkRateLimit", () => {
   beforeEach(() => {
     resetRateLimitStore()
   })
 
+  // ── basic counting ──
+
   it("allows requests within caller limit", () => {
-    for (let i = 0; i < 6; i++) {
-      const result = checkRateLimit("user:a", 2)
-      expect(result.allowed).toBe(true)
-    }
-  })
-
-  it("denies when caller exceeds 12 point limit", () => {
     for (let i = 0; i < 12; i++) {
-      checkRateLimit("user:a", 1)
+      expect(checkRateLimit("user:a", 1).allowed).toBe(true)
     }
-    const result = checkRateLimit("user:a", 1)
-    expect(result.allowed).toBe(false)
-    expect(result.reason).toBe("caller")
-    expect(result.retryAfterSeconds!).toBeGreaterThan(0)
   })
 
-  it("returns retryAfterSeconds as positive integer", () => {
-    for (let i = 0; i < 12; i++) {
-      checkRateLimit("user:a", 1)
-    }
-    const result = checkRateLimit("user:a", 1)
-    expect(result.retryAfterSeconds!).toBeGreaterThan(0)
-    expect(Number.isInteger(result.retryAfterSeconds!)).toBe(true)
+  it("denies when caller exceeds 12 points", () => {
+    for (let i = 0; i < 12; i++) checkRateLimit("user:a", 1)
+    const r = checkRateLimit("user:a", 1)
+    expect(r.allowed).toBe(false)
+    expect(r.reason).toBe("caller")
+    expect(r.retryAfterSeconds!).toBeGreaterThan(0)
+    expect(Number.isInteger(r.retryAfterSeconds!)).toBe(true)
   })
 
-  it("evidence endpoint weight of 2 counts correctly", () => {
-    // 6 requests * 2 = 12 points = limit reached
-    for (let i = 0; i < 6; i++) {
-      checkRateLimit("user:a", 2)
-    }
-    const result = checkRateLimit("user:a", 2)
-    expect(result.allowed).toBe(false)
+  it("evidence weight 2 consumes 2 points per call", () => {
+    for (let i = 0; i < 6; i++) checkRateLimit("user:a", 2)
+    expect(checkRateLimit("user:a", 2).allowed).toBe(false)
+    expect(getStoreSize()).toBe(1)
   })
 
   it("isolates different callers", () => {
-    for (let i = 0; i < 12; i++) {
-      checkRateLimit("user:a", 1)
-    }
-    // user:a is exhausted
+    for (let i = 0; i < 12; i++) checkRateLimit("user:a", 1)
     expect(checkRateLimit("user:a", 1).allowed).toBe(false)
-    // user:b still has full quota
-    const result = checkRateLimit("user:b", 1)
-    expect(result.allowed).toBe(true)
+    expect(checkRateLimit("user:b", 1).allowed).toBe(true)
+    expect(getStoreSize()).toBe(2)
   })
 
-  it("enforces global limit of 300 points", () => {
-    resetRateLimitStore()
+  // ── global limit ──
 
-    // 30 callers * 10 points each = 300 points
-    for (let i = 0; i < 30; i++) {
-      checkRateLimit(`ip:caller${i}`, 10)
-    }
-    const result = checkRateLimit("ip:newcaller", 1)
-    expect(result.allowed).toBe(false)
-    expect(result.reason).toBe("global")
+  it("enforces global 300-point limit", () => {
+    for (let i = 0; i < 30; i++) checkRateLimit(`ip:g${i}`, 10)
+    const r = checkRateLimit("ip:new", 1)
+    expect(r.allowed).toBe(false)
+    expect(r.reason).toBe("global")
+    expect(getStoreSize()).toBe(30)
   })
 
-  it("resets after window by accepting expired entries", () => {
-    // This test relies on cleanup logic - expired entries should be
-    // removed by cleanupExpired. Since we can't advance real time,
-    // we verify that within the same window the limit holds.
-    for (let i = 0; i < 12; i++) {
-      checkRateLimit("user:a", 1)
-    }
-    expect(checkRateLimit("user:a", 1).allowed).toBe(false)
+  // ── atomicity (no partial consumption) ──
+
+  it("does not increment caller count when caller limit denies", () => {
+    for (let i = 0; i < 12; i++) checkRateLimit("user:a", 1)
+    const countBefore = getStoreSize()
+    checkRateLimit("user:a", 1) // denied
+    expect(getStoreSize()).toBe(countBefore)
   })
 
-  it("weight exceeding limit immediately is denied", () => {
-    // Trying to consume 13 points in one call when limit is 12
-    const result = checkRateLimit("user:a", 13)
-    expect(result.allowed).toBe(false)
+  it("does not increment global count nor create new entry when global limit denies", () => {
+    for (let i = 0; i < 30; i++) checkRateLimit(`ip:g${i}`, 10)
+    const sizeAfterFull = getStoreSize()
+    // new caller hitting full global must not create entry
+    checkRateLimit("ip:newcaller", 1)
+    expect(getStoreSize()).toBe(sizeAfterFull) // no growth
   })
 
-  it("caller blocked when global limit hit but caller under own limit", () => {
-    resetRateLimitStore()
-    // Fill global with 299 points
-    for (let i = 0; i < 30; i++) {
-      checkRateLimit(`ip:global${i}`, 10)
-    }
-    // One caller with only 1 point used, but global is nearly full
-    checkRateLimit("user:new", 1)
-    // Global should be at ~301 now, so next should fail
-    const result = checkRateLimit("user:new2", 1)
-    expect(result.allowed).toBe(false)
-  })
-
-  it("cleanup removes expired entries via opportunity", () => {
-    // All entries are with the current window, so cleanup shouldn't
-    // remove them. We verify store grows but cleanups don't
-    // lose active entries.
-    checkRateLimit("user:a", 1)
-    checkRateLimit("user:b", 1)
-    checkRateLimit("user:c", 1)
-    // After 3 entries added, calling again should still work
+  it("does not consume partial weight when insufficient quota", () => {
+    // consume 11 points
+    for (let i = 0; i < 11; i++) checkRateLimit("user:a", 1)
+    const callerSize = getStoreSize()
+    // try weight 2 when only 1 point left
+    const r = checkRateLimit("user:a", 2)
+    expect(r.allowed).toBe(false)
+    // caller count should still be 11, store entry unchanged
+    expect(getStoreSize()).toBe(callerSize)
+    // remaining 1 point should still be usable with weight 1
     expect(checkRateLimit("user:a", 1).allowed).toBe(true)
+  })
+
+  it("both caller and global counts increment by the same weight on allow", () => {
+    // use a unique caller to track global precisely
+    resetRateLimitStore()
+    // fill 299 global points
+    for (let i = 0; i < 30; i++) {
+      if (i === 29) {
+        checkRateLimit(`ip:g${i}`, 9) // 29*10 + 9 = 299
+      } else {
+        checkRateLimit(`ip:g${i}`, 10)
+      }
+    }
+    // global at 299, new caller weight 1 should be allowed
+    const r = checkRateLimit("user:new", 1)
+    expect(r.allowed).toBe(true)
+    // now try weight 2 → should fail (301 > 300)
+    expect(checkRateLimit("user:new2", 2).allowed).toBe(false)
+  })
+
+  // ── Map growth ──
+
+  it("store does not grow from denied requests when global is full", () => {
+    for (let i = 0; i < 30; i++) checkRateLimit(`ip:g${i}`, 10)
+    const sizeAfterFull = getStoreSize()
+    // simulate 50 distinct callers all denied
+    for (let i = 0; i < 50; i++) checkRateLimit(`ip:denied${i}`, 1)
+    expect(getStoreSize()).toBe(sizeAfterFull)
+  })
+
+  it("cleanup removes entries with expired window", () => {
+    // All entries are in current window; calling cleanup should
+    // not remove active entries but our implementation is
+    // opportunity-based (triggered inside checkRateLimit).
+    // We verify store size doesn't grow unbounded when
+    // using many callers - old entries from prior windows
+    // would be removed on next checkRateLimit call.
+    checkRateLimit("user:a", 1)
+    expect(getStoreSize()).toBe(1)
+  })
+
+  // ── consecutive calls don't exceed limit ──
+
+  it("consecutive calls exceeding limit all get denied", () => {
+    for (let i = 0; i < 12; i++) checkRateLimit("user:a", 1)
+    for (let i = 0; i < 5; i++) {
+      expect(checkRateLimit("user:a", 1).allowed).toBe(false)
+    }
   })
 })

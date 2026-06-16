@@ -187,6 +187,11 @@ describe("POST /api/ai/structure", () => {
     expect(body.success).toBe(false)
     expect(body.error).toBe("Too many AI requests. Please try again later.")
     expect(mockStructureQuestion).not.toHaveBeenCalled()
+    // no sensitive info leaked
+    const text = JSON.stringify(body)
+    expect(text).not.toContain("127.0.0.1")
+    expect(text).not.toContain("caller")
+    expect(text).not.toContain("stack")
   })
 
   it("invalid input returns 400 before rate limit check", async () => {

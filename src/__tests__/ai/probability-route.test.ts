@@ -194,5 +194,9 @@ describe("POST /api/ai/probability", () => {
     expect(res.headers.get("Cache-Control")).toBe("no-store")
     expect(body.success).toBe(false)
     expect(mockEstimateProbability).not.toHaveBeenCalled()
+    // no sensitive info leaked
+    const text = JSON.stringify(body)
+    expect(text).not.toContain("127.0.0.1")
+    expect(text).not.toContain("caller")
   })
 })
