@@ -167,4 +167,133 @@ describe("createForecast", () => {
       })
     )
   })
+
+  it("filters out LOW relevance evidence, keeps MEDIUM", async () => {
+    const input = {
+      ...validInput,
+      evidence: [
+        {
+          title: "LOW item",
+          url: "https://low.com",
+          source: "low.com",
+          summary: "Low.",
+          direction: "NEUTRAL" as const,
+          credibility: "LOW" as const,
+          relevance: "LOW" as const,
+          reasoning: "Not relevant.",
+        },
+        {
+          title: "MEDIUM item",
+          url: "https://medium.com",
+          source: "medium.com",
+          summary: "Medium.",
+          direction: "NEUTRAL" as const,
+          credibility: "MEDIUM" as const,
+          relevance: "MEDIUM" as const,
+          reasoning: "Relevant background.",
+        },
+      ],
+    }
+
+    await createForecast(input, "user-1")
+
+    expect(mockCreateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.not.arrayContaining([
+          expect.objectContaining({ title: "LOW item" }),
+        ]),
+      })
+    )
+    expect(mockCreateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.arrayContaining([
+          expect.objectContaining({ title: "MEDIUM item" }),
+        ]),
+      })
+    )
+  })
+
+  it("filters out LOW, keeps HIGH in mixed evidence", async () => {
+    const input = {
+      ...validInput,
+      evidence: [
+        {
+          title: "LOW item",
+          url: "https://low.com",
+          source: "low.com",
+          summary: "Low.",
+          direction: "NEUTRAL" as const,
+          credibility: "LOW" as const,
+          relevance: "LOW" as const,
+          reasoning: "Not relevant.",
+        },
+        {
+          title: "HIGH item",
+          url: "https://high.com",
+          source: "high.com",
+          summary: "High.",
+          direction: "SUPPORT" as const,
+          credibility: "HIGH" as const,
+          relevance: "HIGH" as const,
+          reasoning: "Very relevant.",
+        },
+      ],
+    }
+
+    await createForecast(input, "user-1")
+
+    expect(mockCreateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.not.arrayContaining([
+          expect.objectContaining({ title: "LOW item" }),
+        ]),
+      })
+    )
+    expect(mockCreateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.arrayContaining([
+          expect.objectContaining({ title: "HIGH item" }),
+        ]),
+      })
+    )
+  })
+
+  it("keeps both MEDIUM and HIGH evidence", async () => {
+    const input = {
+      ...validInput,
+      evidence: [
+        {
+          title: "MEDIUM item",
+          url: "https://medium.com",
+          source: "medium.com",
+          summary: "Medium.",
+          direction: "NEUTRAL" as const,
+          credibility: "MEDIUM" as const,
+          relevance: "MEDIUM" as const,
+          reasoning: "Relevant.",
+        },
+        {
+          title: "HIGH item",
+          url: "https://high.com",
+          source: "high.com",
+          summary: "High.",
+          direction: "SUPPORT" as const,
+          credibility: "HIGH" as const,
+          relevance: "HIGH" as const,
+          reasoning: "Very relevant.",
+        },
+      ],
+    }
+
+    await createForecast(input, "user-1")
+
+    expect(mockCreateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.arrayContaining([
+          expect.objectContaining({ title: "MEDIUM item" }),
+          expect.objectContaining({ title: "HIGH item" }),
+        ]),
+      })
+    )
+  })
 })
