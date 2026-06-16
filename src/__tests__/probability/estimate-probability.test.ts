@@ -137,4 +137,22 @@ describe("estimateProbability", () => {
     expect(result.probability).toBeGreaterThanOrEqual(0)
     expect(result.probability).toBeLessThanOrEqual(1)
   })
+
+  it("passes AbortSignal to generateObject for timeout", async () => {
+    mockGenerateObject.mockResolvedValueOnce({
+      object: validEstimate,
+    } as never)
+
+    await estimateProbability({
+      structuredQuestion: "Will something happen?",
+      domain: "technology",
+      evidence: validEvidence,
+    })
+
+    const callArgs = mockGenerateObject.mock.calls[0][0] as Record<
+      string,
+      unknown
+    >
+    expect(callArgs.abortSignal).toBeInstanceOf(AbortSignal)
+  })
 })

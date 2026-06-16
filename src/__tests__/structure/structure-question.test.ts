@@ -122,4 +122,21 @@ describe("structureQuestion", () => {
       })
     ).rejects.toThrow("AI service error")
   })
+
+  it("passes AbortSignal to generateObject for timeout", async () => {
+    mockGenerateObject.mockResolvedValueOnce({
+      object: validResult,
+    } as never)
+
+    await structureQuestion({
+      originalQuestion: "Will something happen?",
+      domain: "technology",
+    })
+
+    const callArgs = mockGenerateObject.mock.calls[0][0] as Record<
+      string,
+      unknown
+    >
+    expect(callArgs.abortSignal).toBeInstanceOf(AbortSignal)
+  })
 })

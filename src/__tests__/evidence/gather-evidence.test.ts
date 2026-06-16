@@ -149,4 +149,39 @@ describe("gatherEvidence", () => {
       })
     ).rejects.toThrow("AI returned invalid evidence")
   })
+
+  it("passes AbortSignal to Tavily fetch via signal param", async () => {
+    mockTavilySearch.mockResolvedValueOnce(mockSearchResults)
+    mockGenerateObject.mockResolvedValueOnce({
+      object: validEvidenceResult,
+    } as never)
+
+    await gatherEvidence({
+      structuredQuestion: "Will something happen?",
+      domain: "technology",
+    })
+
+    expect(mockTavilySearch).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.any(AbortSignal)
+    )
+  })
+
+  it("passes AbortSignal to generateObject for DeepSeek analysis", async () => {
+    mockTavilySearch.mockResolvedValueOnce(mockSearchResults)
+    mockGenerateObject.mockResolvedValueOnce({
+      object: validEvidenceResult,
+    } as never)
+
+    await gatherEvidence({
+      structuredQuestion: "Will something happen?",
+      domain: "technology",
+    })
+
+    const callArgs = mockGenerateObject.mock.calls[0][0] as Record<
+      string,
+      unknown
+    >
+    expect(callArgs.abortSignal).toBeInstanceOf(AbortSignal)
+  })
 })
