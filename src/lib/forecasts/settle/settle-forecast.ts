@@ -33,14 +33,14 @@ export async function settleForecast(
     throw new Error(`Forecast "${forecastId}" not found`)
   }
 
-  if (forecast.status === "SETTLED") {
-    throw new Error(`Forecast "${forecastId}" has already been settled`)
-  }
-
   if (forecast.currentProbability == null) {
     throw new Error(
       `Forecast "${forecastId}" has no probability to score against`
     )
+  }
+
+  if (forecast.status === "SETTLED") {
+    throw new Error(`Forecast "${forecastId}" has already been settled`)
   }
 
   // Permission check
@@ -65,8 +65,13 @@ export async function settleForecast(
     outcome
   )
 
-  await prisma.forecast.update({
-    where: { id: forecastId },
+  // Atomic conditional update: only succeeds if forecast is still DRAFT
+  const result = await prisma.forecast.updateMany({
+    where: {
+      id: forecastId,
+      status: "DRAFT",
+      outcome: null,
+    },
     data: {
       status: "SETTLED",
       outcome,
@@ -75,6 +80,17 @@ export async function settleForecast(
       settlementResult: outcome === "YES",
     },
   })
+
+  if (result.count === 0) {
+    // Lost the race — another request settled first
+    const current = await prisma.forecast.findUnique({
+      where: { id: forecastId },
+    })
+    if (!current) {
+      throw new Error(`Forecast "${forecastId}" not found`)
+    }
+    throw new Error(`Forecast "${forecastId}" has already been settled`)
+  }
 
   console.log(
     `[settle] Forecast id=${forecastId} settled: outcome=${outcome} brierScore=${brierScore}`

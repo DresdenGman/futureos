@@ -1,19 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 
-// Mock Prisma
 const mockFindUnique = vi.fn()
-const mockUpdate = vi.fn()
+const mockUpdateMany = vi.fn()
 
 vi.mock("@/lib/db", () => ({
   default: {
     forecast: {
       findUnique: (...args: unknown[]) => mockFindUnique(...args),
-      update: (...args: unknown[]) => mockUpdate(...args),
+      updateMany: (...args: unknown[]) => mockUpdateMany(...args),
     },
   },
 }))
 
-// Ensure AI and search are NOT called
 vi.mock("ai", () => ({
   generateObject: vi.fn(() => {
     throw new Error("AI should not be called during settlement")
@@ -34,10 +32,11 @@ import {
 
 const mockForecast = {
   id: "fc-1",
-  status: "OPEN",
+  status: "DRAFT",
   currentProbability: 0.64,
   type: "BINARY",
   creatorId: "user-a",
+  outcome: null,
 }
 
 const mockAnonForecast = {
@@ -49,10 +48,9 @@ describe("settleForecast", () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockFindUnique.mockResolvedValue(mockForecast)
-    mockUpdate.mockResolvedValue({ ...mockForecast, status: "SETTLED" })
+    mockUpdateMany.mockResolvedValue({ count: 1 })
   })
 
-  // Basic functioning
   it("settles forecast and returns result when creator matches", async () => {
     const result = await settleForecast("fc-1", "YES", "user-a")
     expect(result.id).toBe("fc-1")
@@ -66,34 +64,26 @@ describe("settleForecast", () => {
     expect(result.brierScore).toBe(0.4096)
   })
 
-  // Permission: owner
   it("allows settlement when creatorId matches currentUserId", async () => {
     await expect(
       settleForecast("fc-1", "YES", "user-a")
     ).resolves.toBeDefined()
   })
 
-  // Permission: unauthorized (not logged in)
   it("throws UnauthorizedError when creatorId exists and currentUserId is null", async () => {
     await expect(settleForecast("fc-1", "YES", null)).rejects.toThrow(
       UnauthorizedError
     )
-    await expect(settleForecast("fc-1", "YES", null)).rejects.toThrow(
-      "signed in"
-    )
+    expect(mockUpdateMany).not.toHaveBeenCalled()
   })
 
-  // Permission: forbidden (wrong user)
   it("throws ForbiddenError when creatorId exists and currentUserId differs", async () => {
     await expect(settleForecast("fc-1", "YES", "user-b")).rejects.toThrow(
       ForbiddenError
     )
-    await expect(settleForecast("fc-1", "YES", "user-b")).rejects.toThrow(
-      "creator"
-    )
+    expect(mockUpdateMany).not.toHaveBeenCalled()
   })
 
-  // Permission: anonymous forecast
   it("allows settlement of anonymous forecast without user", async () => {
     mockFindUnique.mockResolvedValue(mockAnonForecast)
     const result = await settleForecast("fc-1", "YES", null)
@@ -106,30 +96,26 @@ describe("settleForecast", () => {
     expect(result.status).toBe("SETTLED")
   })
 
-  // Not found
-  it("throws when forecast not found (before permission check)", async () => {
+  it("throws when forecast not found", async () => {
     mockFindUnique.mockResolvedValue(null)
-    await expect(settleForecast("fc-missing", "YES", "user-a")).rejects.toThrow(
-      "not found"
-    )
+    await expect(
+      settleForecast("fc-missing", "YES", "user-a")
+    ).rejects.toThrow("not found")
+    expect(mockUpdateMany).not.toHaveBeenCalled()
   })
 
-  // Already settled
-  it("throws when already settled", async () => {
-    mockFindUnique.mockResolvedValue({
-      ...mockForecast,
-      status: "SETTLED",
-    })
+  it("throws when already settled (initial read)", async () => {
+    mockFindUnique.mockResolvedValue({ ...mockForecast, status: "SETTLED" })
     await expect(settleForecast("fc-1", "YES", "user-a")).rejects.toThrow(
       "already been settled"
     )
+    expect(mockUpdateMany).not.toHaveBeenCalled()
   })
 
-  // Correct update
-  it("updates forecast with correct fields", async () => {
+  it("uses updateMany with DRAFT + outcome:null condition", async () => {
     await settleForecast("fc-1", "YES", "user-a")
-    expect(mockUpdate).toHaveBeenCalledWith({
-      where: { id: "fc-1" },
+    expect(mockUpdateMany).toHaveBeenCalledWith({
+      where: { id: "fc-1", status: "DRAFT", outcome: null },
       data: expect.objectContaining({
         status: "SETTLED",
         outcome: "YES",
@@ -141,13 +127,12 @@ describe("settleForecast", () => {
 
   it("sets settlementResult false for NO", async () => {
     await settleForecast("fc-1", "NO", "user-a")
-    expect(mockUpdate).toHaveBeenCalledWith({
-      where: { id: "fc-1" },
+    expect(mockUpdateMany).toHaveBeenCalledWith({
+      where: { id: "fc-1", status: "DRAFT", outcome: null },
       data: expect.objectContaining({ settlementResult: false }),
     })
   })
 
-  // No probability
   it("throws when no probability available", async () => {
     mockFindUnique.mockResolvedValue({
       ...mockForecast,
@@ -156,5 +141,89 @@ describe("settleForecast", () => {
     await expect(settleForecast("fc-1", "YES", "user-a")).rejects.toThrow(
       "no probability"
     )
+    expect(mockUpdateMany).not.toHaveBeenCalled()
+  })
+
+  it("throws already-settled when updateMany returns count 0", async () => {
+    mockUpdateMany.mockResolvedValue({ count: 0 })
+    // Mock re-read after race loss
+    mockFindUnique
+      .mockResolvedValueOnce(mockForecast) // initial read
+      .mockResolvedValueOnce({ ...mockForecast, status: "SETTLED", outcome: "YES" }) // re-read
+
+    await expect(settleForecast("fc-1", "YES", "user-a")).rejects.toThrow(
+      "already been settled"
+    )
+  })
+
+  it("throws not-found when updateMany count=0 and record deleted", async () => {
+    mockUpdateMany.mockResolvedValue({ count: 0 })
+    mockFindUnique
+      .mockResolvedValueOnce(mockForecast) // initial read
+      .mockResolvedValueOnce(null) // re-read: gone
+
+    await expect(settleForecast("fc-1", "YES", "user-a")).rejects.toThrow(
+      "not found"
+    )
+  })
+
+  // ── concurrent race tests ──
+
+  it("YES + YES race: exactly one succeeds", async () => {
+    // First call will get count=1, second will get count=0
+    let callCount = 0
+    mockUpdateMany.mockImplementation(() => {
+      callCount++
+      return Promise.resolve({ count: callCount === 1 ? 1 : 0 })
+    })
+    // Re-read for loser returns settled
+    mockFindUnique
+      .mockResolvedValueOnce(mockForecast)
+      .mockResolvedValueOnce({ ...mockForecast, status: "SETTLED", outcome: "YES" })
+
+    const results = await Promise.allSettled([
+      settleForecast("fc-1", "YES", "user-a"),
+      settleForecast("fc-1", "YES", "user-a"),
+    ])
+
+    const fulfilled = results.filter((r) => r.status === "fulfilled")
+    const rejected = results.filter((r) => r.status === "rejected")
+
+    expect(fulfilled.length).toBe(1)
+    expect(rejected.length).toBe(1)
+    expect((fulfilled[0] as PromiseFulfilledResult<unknown>).value).toMatchObject({
+      status: "SETTLED",
+      outcome: "YES",
+    })
+
+    const rejectedErr = (rejected[0] as PromiseRejectedResult).reason
+    expect(rejectedErr.message).toContain("already been settled")
+  })
+
+  it("YES + NO race: exactly one succeeds, no overwrite", async () => {
+    let callCount = 0
+    mockUpdateMany.mockImplementation(() => {
+      callCount++
+      return Promise.resolve({ count: callCount === 1 ? 1 : 0 })
+    })
+    // For the first call: ensures initial read passes
+    mockFindUnique
+      .mockResolvedValueOnce(mockForecast) // winner initial
+      .mockResolvedValueOnce(mockForecast) // loser initial
+      .mockResolvedValueOnce({ ...mockForecast, status: "SETTLED", outcome: "YES" }) // loser re-read
+
+    const results = await Promise.allSettled([
+      settleForecast("fc-1", "YES", "user-a"),
+      settleForecast("fc-1", "NO", "user-a"),
+    ])
+
+    const fulfilled = results.filter((r) => r.status === "fulfilled")
+    const rejected = results.filter((r) => r.status === "rejected")
+
+    expect(fulfilled.length).toBe(1)
+    expect(rejected.length).toBe(1)
+
+    const rejectedErr = (rejected[0] as PromiseRejectedResult).reason
+    expect(rejectedErr.message).toContain("already been settled")
   })
 })
