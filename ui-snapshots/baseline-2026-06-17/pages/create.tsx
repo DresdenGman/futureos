@@ -91,26 +91,10 @@ export default function CreatePage() {
         : 0
 
   const steps = [
-    {
-      label: "Structure",
-      status: (step === 0 ? "active" : step > 0 ? "completed" : "pending") as StepStatus,
-      explanation: "We turn your question into something verifiable.",
-    },
-    {
-      label: "Evidence",
-      status: (step === 1 ? "active" : step > 1 ? "completed" : "pending") as StepStatus,
-      explanation: "We search for supporting, opposing, and neutral signals.",
-    },
-    {
-      label: "Probability",
-      status: (step === 2 ? "active" : step > 2 ? "completed" : "pending") as StepStatus,
-      explanation: "We estimate likelihood based on evidence and uncertainty.",
-    },
-    {
-      label: "Save",
-      status: (step === 3 ? "active" : isSaving ? "active" : "pending") as StepStatus,
-      explanation: "Save it so you can resolve it later and track your accuracy.",
-    },
+    { label: "Structure", status: (step === 0 ? "active" : step > 0 ? "completed" : "pending") as StepStatus },
+    { label: "Evidence", status: (step === 1 ? "active" : step > 1 ? "completed" : "pending") as StepStatus },
+    { label: "Probability", status: (step === 2 ? "active" : step > 2 ? "completed" : "pending") as StepStatus },
+    { label: "Save", status: (step === 3 ? "active" : isSaving ? "active" : "pending") as StepStatus },
   ]
 
   type StepStatus = "pending" | "active" | "completed"
@@ -308,31 +292,13 @@ export default function CreatePage() {
               <CardTitle className="text-lg">
                 Step 1: What do you want to predict?
               </CardTitle>
-                <CardDescription>
-                  Be as specific as you can about the event, time frame, and
-                  outcome.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="mb-4 rounded-lg border border-muted-foreground/20 bg-muted/40 p-3 text-xs text-muted-foreground space-y-1">
-                  <p className="font-medium text-foreground/80">
-                    A good forecast question should have:
-                  </p>
-                  <ul className="list-disc list-inside space-y-0.5 pl-1">
-                    <li>a clear event</li>
-                    <li>a deadline</li>
-                    <li>an objective way to resolve it</li>
-                  </ul>
-                  <div className="mt-1 space-y-0.5">
-                    <p className="text-green-700 dark:text-green-300">
-                      Good: Will Tesla announce a new low-cost EV before 2026-12-31?
-                    </p>
-                    <p className="text-red-700 dark:text-red-300">
-                      Too vague: Will Tesla do well?
-                    </p>
-                  </div>
-                </div>
-                <Form {...form}>
+              <CardDescription>
+                Be as specific as you can about the event, time frame, and
+                outcome.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Form {...form}>
                 <form
                   onSubmit={form.handleSubmit(onStructure)}
                   className="space-y-6"
@@ -402,10 +368,6 @@ export default function CreatePage() {
                       "Structure Question"
                     )}
                   </Button>
-                  <p className="text-xs text-muted-foreground text-center">
-                    You can create up to 3 full forecasts in a short session.
-                    If you hit a rate limit, wait about 15 minutes and continue.
-                  </p>
                 </form>
               </Form>
             </CardContent>
@@ -586,31 +548,6 @@ export default function CreatePage() {
 
             {/* Evidence Cards */}
             <div className="space-y-4">
-              <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                <span className="text-green-600 dark:text-green-400 font-medium">
-                  Support:{" "}
-                  {
-                    evidence.evidence.filter((e) => e.direction === "SUPPORT")
-                      .length
-                  }
-                </span>
-                <span>·</span>
-                <span className="text-red-600 dark:text-red-400 font-medium">
-                  Oppose:{" "}
-                  {
-                    evidence.evidence.filter((e) => e.direction === "OPPOSE")
-                      .length
-                  }
-                </span>
-                <span>·</span>
-                <span>
-                  Neutral:{" "}
-                  {
-                    evidence.evidence.filter((e) => e.direction === "NEUTRAL")
-                      .length
-                  }
-                </span>
-              </div>
               {evidence.evidence.map((item, i) => (
                 <EvidenceCard key={i} evidence={item} />
               ))}

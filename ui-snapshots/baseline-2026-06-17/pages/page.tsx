@@ -38,15 +38,12 @@ export default async function HomePage() {
           <br />
           Structure questions, gather evidence, track probabilities.
         </p>
-        <div className="flex flex-col items-center gap-2 pt-4">
+        <div className="flex justify-center pt-4">
           <Link href="/create">
             <Button size="lg" className="text-base">
-              Create a Forecast
+              Start a Forecast
             </Button>
           </Link>
-          <p className="text-sm text-muted-foreground">
-            Start with a question that has a deadline and a clear way to resolve it.
-          </p>
         </div>
       </section>
 
@@ -83,113 +80,6 @@ export default async function HomePage() {
             </CardDescription>
           </CardHeader>
         </Card>
-      </section>
-
-      {/* How FutureOS Works */}
-      <section className="mt-24 w-full max-w-3xl">
-        <h2 className="text-xl font-semibold mb-6 text-center">
-          How FutureOS Works
-        </h2>
-        <div className="grid gap-4 sm:grid-cols-3">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold">
-                  1
-                </span>
-                <CardTitle className="text-base">Ask</CardTitle>
-              </div>
-              <CardDescription>
-                Start with a question that has a clear event, deadline, and
-                resolution criteria.
-              </CardDescription>
-            </CardHeader>
-          </Card>
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold">
-                  2
-                </span>
-                <CardTitle className="text-base">Review</CardTitle>
-              </div>
-              <CardDescription>
-                FutureOS searches for supporting, opposing, and neutral signals,
-                then estimates a probability.
-              </CardDescription>
-            </CardHeader>
-          </Card>
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold">
-                  3
-                </span>
-                <CardTitle className="text-base">Resolve</CardTitle>
-              </div>
-              <CardDescription>
-                Save the forecast, come back later, resolve the outcome, and
-                track your accuracy.
-              </CardDescription>
-            </CardHeader>
-          </Card>
-        </div>
-      </section>
-
-      {/* Good vs Bad Questions */}
-      <section className="mt-20 w-full max-w-3xl">
-        <h2 className="text-xl font-semibold mb-6 text-center">
-          What Makes a Good Forecast?
-        </h2>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Card className="border-green-200 dark:border-green-800">
-            <CardHeader>
-              <CardTitle className="text-sm font-medium text-green-700 dark:text-green-300">
-                Good questions
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="text-sm">
-                <span className="block font-medium">
-                  Will OpenAI release a new flagship model before 2026-09-30?
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  Clear event, deadline, and verifiable outcome.
-                </span>
-              </div>
-              <div className="text-sm">
-                <span className="block font-medium">
-                  Will Tesla announce a new low-cost EV before 2026-12-31?
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  Specific company, specific event, clear deadline.
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="border-red-200 dark:border-red-800">
-            <CardHeader>
-              <CardTitle className="text-sm font-medium text-red-700 dark:text-red-300">
-                Too vague
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="text-sm">
-                <span className="block font-medium">Will AI change the world?</span>
-                <span className="text-xs text-muted-foreground">
-                  No deadline, no clear event, impossible to verify.
-                </span>
-              </div>
-              <div className="text-sm">
-                <span className="block font-medium">Will Tesla do well?</span>
-                <span className="text-xs text-muted-foreground">
-                  &ldquo;Do well&rdquo; is subjective — needs measurable
-                  criteria.
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
       </section>
 
       {/* Recent Forecasts */}

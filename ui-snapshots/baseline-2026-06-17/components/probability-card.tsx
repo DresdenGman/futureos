@@ -42,19 +42,6 @@ export function ProbabilityCard({
           </span>
         </div>
 
-        <div className="rounded-lg border border-muted-foreground/20 bg-muted/40 p-3 text-xs text-muted-foreground space-y-2">
-          <p>
-            <strong>Probability is not certainty.</strong> A {pct}% forecast
-            means this outcome should happen about {pct} out of 100 times in
-            similar situations.
-          </p>
-          <p>
-            <strong>Confidence reflects evidence quality,</strong> not how
-            dramatic the prediction is. Low confidence means limited or
-            conflicting evidence.
-          </p>
-        </div>
-
         <Separator />
 
         {/* Reasoning */}

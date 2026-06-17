@@ -122,34 +122,9 @@ export default async function ForecastDetailPage({
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">Resolution Criteria</CardTitle>
-            <CardDescription>
-              The deadline and standard used to determine the outcome.
-            </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-1">
-              <h3 className="text-sm font-medium text-muted-foreground">
-                Resolution Deadline
-              </h3>
-              <p className="text-lg font-semibold">
-                {forecast.deadline.toISOString().split("T")[0]}
-              </p>
-            </div>
-            <div className="space-y-1">
-              <h3 className="text-sm font-medium text-muted-foreground">
-                Criteria
-              </h3>
-              <p className="text-sm">{forecast.resolutionCriteria}</p>
-            </div>
-            <div className="rounded-lg border border-muted-foreground/20 bg-muted/40 p-3 text-xs text-muted-foreground space-y-1">
-              <p>
-                <strong>Resolve YES</strong> if the event happened according to
-                the criteria.
-              </p>
-              <p>
-                <strong>Resolve NO</strong> if it did not.
-              </p>
-            </div>
+          <CardContent>
+            <p className="text-sm">{forecast.resolutionCriteria}</p>
           </CardContent>
         </Card>
 
