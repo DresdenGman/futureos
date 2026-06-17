@@ -128,6 +128,8 @@ export function SettlementCard({
                 </span>
               </div>
               <p className="text-xs text-muted-foreground">
+                Brier Score measures forecast accuracy. Lower is better. 0 is
+                perfect, 1 is worst.{" — "}
                 {localBrierScore < 0.1
                   ? "Excellent calibration — the prediction was highly accurate."
                   : localBrierScore < 0.25

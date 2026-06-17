@@ -8,6 +8,12 @@ import {
 import { ExternalLink } from "lucide-react"
 import type { EvidenceItem } from "@/lib/ai/evidence/schema"
 
+const directionLabels: Record<EvidenceItem["direction"], string> = {
+  SUPPORT: "Supporting",
+  OPPOSE: "Opposing",
+  NEUTRAL: "Neutral",
+}
+
 const directionColors: Record<EvidenceItem["direction"], string> = {
   SUPPORT: "bg-green-100 text-green-800 border-green-200 dark:bg-green-950 dark:text-green-200 dark:border-green-800",
   OPPOSE: "bg-red-100 text-red-800 border-red-200 dark:bg-red-950 dark:text-red-200 dark:border-red-800",
@@ -43,7 +49,7 @@ export function EvidenceCard({ evidence }: { evidence: EvidenceItem }) {
           <span
             className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-semibold whitespace-nowrap ${directionColors[evidence.direction]}`}
           >
-            {evidence.direction}
+            {directionLabels[evidence.direction]}
           </span>
         </div>
       </CardHeader>
