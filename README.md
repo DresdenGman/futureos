@@ -1,187 +1,94 @@
 # FutureOS
 
-**AI-powered probabilistic forecasting platform.**
+**A decision operating system for people working under genuine uncertainty.**
 
-FutureOS helps you transform vague questions about the future into verifiable prediction questions, gather evidence from the web, estimate probabilities, and track outcomes over time. Built with a focus on calibration, evidence, and verifiability — not fortune-telling.
+[Live product](https://futureos.space) · [Open decision tools](https://futureos.space/tools) · [Privacy](https://futureos.space/privacy)
 
-## MVP Features
+![FutureOS — Make the future answerable](public/og.png)
 
-| Feature | Description |
-|---------|-------------|
-| **Question Structuring** | AI rewrites vague questions into verifiable binary (yes/no) predictions with clear resolution criteria and deadlines |
-| **Evidence Search** | Searches the web via Tavily, then AI classifies results as supporting, opposing, or neutral evidence with credibility scores |
-| **Probability Estimation** | AI estimates a calibrated probability (0–100%) with confidence level, key drivers, counter-arguments, and uncertainty factors |
-| **Save & View** | Saves forecasts to PostgreSQL with full evidence trails and probability history |
-| **Manual Settlement** | Mark forecasts as occurred / not occurred at deadline |
-| **Brier Score** | Calculate calibration accuracy — lower score = better prediction |
+Most software stores what happened. FutureOS preserves the decision contract that existed **before** anyone knew the answer: what you believed, why you acted, what changed, and what reality eventually proved.
 
-## Tech Stack
+## The operating loop
 
-| Layer | Technology |
-|-------|-----------|
-| Framework | Next.js 14 (App Router) |
-| Language | TypeScript (strict) |
-| Styling | Tailwind CSS + shadcn/ui |
-| Database | PostgreSQL + Prisma ORM |
-| Auth | NextAuth.js v5 (GitHub OAuth) |
-| AI | Vercel AI SDK + OpenAI (GPT-4o-mini) |
-| Search | Tavily Search API |
-| Validation | Zod |
-| Testing | Vitest + React Testing Library |
+1. **Frame** — turn an ambiguous choice into a question reality can answer.
+2. **Forecast** — expose probability, value, downside, and reversibility before acting.
+3. **Update** — let new evidence change the belief without erasing its history.
+4. **Resolve** — separate process quality from luck and keep the lesson reusable.
 
-## Getting Started
+## Why it is different
 
-### Prerequisites
+FutureOS treats a decision as a versioned object rather than a note or a chat transcript. Each record can retain a forecast, assumptions, evidence updates, an outcome, and a calibration signal. The goal is not to pretend uncertainty disappears; it is to make uncertainty inspectable and learning cumulative.
 
-- Node.js 18+
-- PostgreSQL (local or remote)
-- GitHub OAuth App (for login)
-- OpenAI API key
-- Tavily API key
+The product also includes two no-login public instruments:
 
-### 1. Clone and install
+- **Decision Quality Score** — a seven-dimension pre-mortem for a decision process.
+- **Probability Calibration Test** — ten stable questions scored with the Brier rule.
+
+Answers and scores for these open instruments are computed in the browser and are not stored.
+
+## Applied mathematics
+
+The mathematical layer is part of the product logic, not visual decoration:
+
+- **Expected utility** compares actions across possible futures: `EU(a) = Σ p(s) · u(a,s)`.
+- **Bayesian revision** makes belief changes accountable: `P(H|E) = P(E|H)P(H) / P(E)`.
+- **Brier scoring** measures probabilistic accuracy: `(p − o)²`.
+- **Option value** treats reversibility and preserved future choices as assets.
+
+See [Mathematical foundations](docs/MATHEMATICAL_FOUNDATIONS.md) for the implemented models, design boundaries, and roadmap.
+
+## Product surfaces
+
+- Public editorial landing page and interactive demo
+- Authenticated decision workspace
+- Decision creation, evidence updates, resolution, and memory
+- Decision map and aggregate insight views
+- Anonymous, privacy-minimized usage measurement for open instruments
+- Responsive layout, accessible focus states, metadata, sitemap, and security headers
+
+## Technology
+
+- React 19 + TypeScript
+- Vinext + Vite
+- Tailwind CSS
+- Drizzle ORM + SQLite-compatible D1 storage
+- Sites authentication (`Sign in with ChatGPT`)
+- Zod validation and server-side ownership checks
+
+## Run locally
+
+Requirements: Node.js 22.13 or newer.
 
 ```bash
-git clone <repo-url> futureos
-cd futureos
 npm install
-```
-
-### 2. Configure environment
-
-```bash
-cp .env.example .env
-```
-
-Edit `.env` and fill in:
-
-- `DATABASE_URL` — PostgreSQL connection string
-- `AUTH_SECRET` — generate with `openssl rand -base64 32`
-- `AUTH_GITHUB_ID` / `AUTH_GITHUB_SECRET` — from GitHub OAuth App
-- `OPENAI_API_KEY` — from platform.openai.com
-- `TAVILY_API_KEY` — from tavily.com
-
-### 3. Database setup
-
-```bash
-# Generate Prisma client
-npx prisma generate
-
-# Run migrations (creates tables)
-npx prisma migrate dev --name init
-
-# Seed domain data
-npm run db:seed
-```
-
-### 4. Start dev server
-
-```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Then open the local URL printed by the development server. Authenticated and database-backed flows depend on a compatible Sites runtime; the landing page, demo, and open instruments can still be reviewed locally.
 
-## Available Scripts
+Quality checks:
 
-| Script | Description |
-|--------|-------------|
-| `npm run dev` | Start development server |
-| `npm run build` | Production build |
-| `npm run start` | Start production server |
-| `npm run lint` | Run ESLint |
-| `npm run typecheck` | Run TypeScript type checking |
-| `npm run test` | Run all tests (Vitest) |
-| `npm run test:watch` | Run tests in watch mode |
-| `prisma:generate` | Regenerate Prisma client |
-| `db:migrate` | Run Prisma migrations |
-| `db:seed` | Seed domain data |
-| `db:studio` | Open Prisma Studio (DB GUI) |
-
-## Deployment
-
-### Vercel
-
-1. Push your code to a Git repository
-2. Import the project in Vercel
-3. Configure **Environment Variables** in Vercel dashboard:
-   - `DATABASE_URL` — your production PostgreSQL URL
-   - `AUTH_SECRET` — generate a new secret
-   - `AUTH_URL` — your production URL (e.g., `https://futureos.vercel.app`)
-   - `AUTH_GITHUB_ID` / `AUTH_GITHUB_SECRET` — GitHub OAuth credentials (update callback URL to production domain)
-   - `OPENAI_API_KEY` — your OpenAI key
-   - `TAVILY_API_KEY` — your Tavily key
-   - `AI_MODEL` — optional, defaults to `gpt-4o-mini`
-4. **Before first deploy**, run migrations against your production database:
-   ```bash
-   npx prisma migrate deploy
-   ```
-5. Deploy — the `postinstall` script automatically runs `prisma generate`
-
-> Note: Migrations are NOT run automatically during Vercel build. Run `npx prisma migrate deploy` manually against your production database before deploying.
-
-### Database
-
-Use a managed PostgreSQL provider:
-- [Neon](https://neon.tech) — free tier available
-- [Supabase](https://supabase.com) — free tier available
-- [Railway](https://railway.app)
-
-## Architecture
-
-```
-src/
-├── app/                    # Next.js App Router pages + API routes
-│   ├── page.tsx            # Home page (recent forecasts)
-│   ├── create/             # 3-step forecast creation flow
-│   ├── forecast/[id]/      # Forecast detail + settlement
-│   └── api/                # API routes
-│       ├── ai/structure/   # Question structuring
-│       ├── ai/evidence/    # Evidence search & analysis
-│       ├── ai/probability/ # Probability estimation
-│       ├── forecasts/      # Create + list forecasts
-│       └── health/         # Health check
-├── lib/
-│   ├── ai/                 # AI pipeline modules
-│   ├── auth/               # Auth utilities
-│   ├── config/             # Env validation
-│   ├── db.ts               # Prisma client singleton
-│   ├── forecasts/          # Forecast save + settle logic
-│   ├── scoring/            # Brier Score calculation
-│   └── search/             # Tavily search client
-└── components/             # UI components
-    ├── ui/                 # shadcn/ui primitives
-    ├── create/             # Create flow components
-    ├── evidence/           # Evidence display cards
-    ├── forecasts/          # Settlement card
-    ├── probability/        # Probability display
-    └── shared/             # Loading, Empty, Error states
+```bash
+npm run lint
+npm run build
 ```
 
-## Current Limitations
+## Privacy and security
 
-- **Manual settlement only** — no automatic settlement at deadline
-- **No settlement review/undo** — settlement cannot be reversed
-- **No private forecasts** — all forecasts are publicly viewable
-- **No edit/delete** — forecasts cannot be modified after creation
-- **No user probability predictions** — only AI-generated probabilities
-- **No leaderboards/comments/forecast square** — single-user focused MVP
-- **No chart library** — probability history shown as a simple list
+Decision records are scoped to the authenticated Sites user identifier, and server-side ownership checks protect reads and writes. Public-instrument answers, confidence values, and scores are not transmitted or stored. The measurement endpoint records only coarse source attribution and start/completion/share events using a rotating one-way visitor key.
 
-## Development Stages
+Please read the live [privacy note](https://futureos.space/privacy) and report vulnerabilities according to [SECURITY.md](SECURITY.md). Do not submit sensitive personal decisions to a development environment.
 
-| Stage | Feature | Status |
-|-------|---------|--------|
-| 1 | Project scaffolding, auth, database | ✅ |
-| 2 | AI question structuring | ✅ |
-| 3 | Evidence search & analysis | ✅ |
-| 4 | Probability estimation | ✅ |
-| 5 | Save forecasts to database | ✅ |
-| 6 | Manual settlement + Brier Score | ✅ |
-| 7 | UX polish & error states | ✅ |
-| 8 | Permission & ownership | ✅ |
-| 9 | Production readiness | ✅ |
+## Project status
+
+FutureOS is a working public product under active development. The current focus is validating whether versioned decision memory improves calibration and reduces hindsight bias over repeated real decisions. Roadmap claims are intentionally separated from implemented behavior.
+
+Earlier forecasting prototypes remain preserved in the repository history and existing beta tags.
+
+## Contributing
+
+Constructive issues and small, testable pull requests are welcome. Start with [CONTRIBUTING.md](CONTRIBUTING.md) and follow the [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## License
 
-MIT
+MIT — see [LICENSE](LICENSE).

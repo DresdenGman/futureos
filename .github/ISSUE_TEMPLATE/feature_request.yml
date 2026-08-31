@@ -1,0 +1,31 @@
+name: Product proposal
+description: Propose a focused improvement or experiment
+title: "[Proposal]: "
+labels: ["proposal"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Decision problem
+      description: What user problem exists, and for whom?
+    validations:
+      required: true
+  - type: textarea
+    id: hypothesis
+    attributes:
+      label: Proposed change and hypothesis
+      description: State what should change and why it may help.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence or measurement
+      description: How could the idea be tested without collecting unnecessary personal data?
+    validations:
+      required: true
+  - type: textarea
+    id: risks
+    attributes:
+      label: Risks and alternatives
+      description: Include privacy, security, accessibility, and model-risk considerations where relevant.
