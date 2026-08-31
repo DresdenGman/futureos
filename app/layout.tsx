@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { SiteFooter } from '@/components/site-footer';
 import { SiteHeader } from '@/components/site-header';
 import './globals.css';
 
@@ -43,6 +44,7 @@ export default function RootLayout({
       <body className="min-h-screen bg-background text-foreground antialiased">
         <SiteHeader />
         <main>{children}</main>
+        <SiteFooter />
       </body>
     </html>
   );

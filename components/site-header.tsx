@@ -10,8 +10,8 @@ const productLinks = [
   { href: '/workspace', label: 'Workspace' },
   { href: '/map', label: 'Decision map' },
   { href: '/memory', label: 'Memory' },
-  { href: '/demo', label: 'Demo' },
   { href: '/tools', label: 'Free tools' },
+  { href: '/research', label: 'Research' },
 ];
 
 export async function SiteHeader() {

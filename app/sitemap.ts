@@ -10,6 +10,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/tools',
     '/tools/decision-quality',
     '/tools/calibration',
+    '/research',
+    '/impact',
   ];
 
   return routes.map((route) => ({

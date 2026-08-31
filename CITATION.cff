@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+message: "If you use FutureOS in research, teaching, or a derived project, please cite this software."
+title: "FutureOS: A versioned decision operating system"
+type: software
+authors:
+  - family-names: "Dresden"
+    website: "https://github.com/DresdenGman"
+version: 1.0.0
+date-released: 2026-08-30
+url: "https://futureos.space"
+repository-code: "https://github.com/DresdenGman/futureos"
+license: MIT
+keywords:
+  - decision science
+  - probabilistic forecasting
+  - calibration
+  - Brier score
+  - Bayesian updating
+  - expected utility
+abstract: >-
+  FutureOS preserves what a person believed before an outcome was known,
+  records evidence-linked probability updates, and resolves forecasts so
+  judgment can be evaluated over time.
