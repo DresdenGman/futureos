@@ -1,0 +1,31 @@
+{
+  "name": "shortcut-baseline",
+  "benchmark_version": "0.1.0",
+  "description": "A deliberately weak diagnostic baseline: best-case payoff, unchanged prior, absolute error, and immediate value only.",
+  "predictions": [
+    { "id": "eu-01", "value": "full_launch" },
+    { "id": "eu-02", "value": "prototype" },
+    { "id": "eu-03", "value": "large_workshop" },
+    { "id": "eu-04", "value": "rewrite" },
+    { "id": "eu-05", "value": "deep_integration" },
+    { "id": "eu-06", "value": "hardware_first" },
+    { "id": "bayes-01", "value": 0.3 },
+    { "id": "bayes-02", "value": 0.1 },
+    { "id": "bayes-03", "value": 0.6 },
+    { "id": "bayes-04", "value": 0.5 },
+    { "id": "bayes-05", "value": 0.2 },
+    { "id": "bayes-06", "value": 0.75 },
+    { "id": "brier-01", "value": 0.2 },
+    { "id": "brier-02", "value": 0.7 },
+    { "id": "brier-03", "value": 0.65 },
+    { "id": "brier-04", "value": 0.1 },
+    { "id": "brier-05", "value": 0.45 },
+    { "id": "brier-06", "value": 0.95 },
+    { "id": "option-01", "value": "launch_now" },
+    { "id": "option-02", "value": "switch_stack" },
+    { "id": "option-03", "value": "purchase" },
+    { "id": "option-04", "value": "publish_now" },
+    { "id": "option-05", "value": "hire_full_time" },
+    { "id": "option-06", "value": "lock_curriculum" }
+  ]
+}

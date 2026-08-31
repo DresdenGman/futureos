@@ -11,6 +11,7 @@
     "start": "wrangler dev --config dist/server/wrangler.json",
     "lint": "oxlint",
     "format": "oxfmt",
+    "benchmark:decision-quality": "node scripts/score-decision-quality-benchmark.mjs",
     "db:generate": "drizzle-kit generate"
   },
   "dependencies": {

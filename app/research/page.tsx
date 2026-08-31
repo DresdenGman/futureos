@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import {
   ArrowRight,
+  Download,
   ExternalLink,
   FlaskConical,
   GitBranch,
@@ -211,6 +212,56 @@ export default function ResearchPage() {
         </div>
       </section>
 
+      <section className="border-b border-ink/15 bg-[#fbfaf6]">
+        <div className="page-shell grid gap-12 py-20 lg:grid-cols-[0.78fr_1.22fr] sm:py-28">
+          <div>
+            <p className="measure-label">Open benchmark / v0.1</p>
+            <h2 className="mt-6 text-5xl font-medium leading-[0.96] tracking-[-0.055em] text-ink sm:text-6xl">
+              Make the math
+              <span className="font-editorial font-normal italic">
+                {' '}
+                executable.
+              </span>
+            </h2>
+          </div>
+          <div className="border-t border-ink/20 pt-8">
+            <p className="max-w-2xl text-sm leading-7 text-ink/60">
+              The Decision Quality Benchmark contains 24 deterministic,
+              synthetic cases across expected utility, Bayesian revision,
+              binary Brier scoring and explicit option value. It includes an
+              executable scorer and a deliberately weak shortcut baseline.
+            </p>
+            <div className="mt-8 grid gap-px border border-ink/15 bg-ink/15 sm:grid-cols-3">
+              <BenchmarkFact value="24" label="Synthetic cases" />
+              <BenchmarkFact value="04" label="Task families" />
+              <BenchmarkFact value="CC BY" label="Open dataset" />
+            </div>
+            <p className="mt-7 max-w-2xl text-xs leading-6 text-ink/45">
+              Claim boundary: passing the benchmark demonstrates calculation
+              and implementation correctness on these cases. It does not show
+              that FutureOS improves human judgment.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-2">
+              <a
+                href="/research/decision-quality-benchmark-v0.1.json"
+                download
+                className="field-button field-button-primary"
+              >
+                Download the dataset <Download className="h-4 w-4" />
+              </a>
+              <a
+                href="https://github.com/DresdenGman/futureos/tree/main/research/decision-quality-benchmark"
+                target="_blank"
+                rel="noreferrer"
+                className="field-button field-button-secondary"
+              >
+                Inspect the method <ExternalLink className="h-4 w-4" />
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section className="page-shell py-20 sm:py-28">
         <div className="grid gap-12 lg:grid-cols-[0.72fr_1.28fr]">
           <div>
@@ -272,6 +323,19 @@ export default function ResearchPage() {
           </div>
         </div>
       </section>
+    </div>
+  );
+}
+
+function BenchmarkFact({ value, label }: { value: string; label: string }) {
+  return (
+    <div className="bg-[#fbfaf6] p-6">
+      <p className="font-editorial text-4xl italic tracking-[-0.04em] text-ink">
+        {value}
+      </p>
+      <p className="mt-3 font-mono text-[8px] uppercase tracking-[0.09em] text-ink/42">
+        {label}
+      </p>
     </div>
   );
 }

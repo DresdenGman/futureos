@@ -1,0 +1,31 @@
+{
+  "name": "reference-implementation",
+  "benchmark_version": "0.1.0",
+  "description": "Reference answers used only to verify the public scoring contract.",
+  "predictions": [
+    { "id": "eu-01", "value": "pilot" },
+    { "id": "eu-02", "value": "methods_paper" },
+    { "id": "eu-03", "value": "small_workshop" },
+    { "id": "eu-04", "value": "rewrite" },
+    { "id": "eu-05", "value": "modular_integration" },
+    { "id": "eu-06", "value": "software_first" },
+    { "id": "bayes-01", "value": 0.631579 },
+    { "id": "bayes-02", "value": 0.25 },
+    { "id": "bayes-03", "value": 0.461538 },
+    { "id": "bayes-04", "value": 0.8125 },
+    { "id": "bayes-05", "value": 0.6 },
+    { "id": "bayes-06", "value": 0.5 },
+    { "id": "brier-01", "value": 0.04 },
+    { "id": "brier-02", "value": 0.49 },
+    { "id": "brier-03", "value": 0.4225 },
+    { "id": "brier-04", "value": 0.01 },
+    { "id": "brier-05", "value": 0.2025 },
+    { "id": "brier-06", "value": 0.9025 },
+    { "id": "option-01", "value": "run_pilot" },
+    { "id": "option-02", "value": "parallel_prototype" },
+    { "id": "option-03", "value": "lease" },
+    { "id": "option-04", "value": "preregister_first" },
+    { "id": "option-05", "value": "short_contract" },
+    { "id": "option-06", "value": "modular_curriculum" }
+  ]
+}

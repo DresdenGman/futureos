@@ -1,0 +1,301 @@
+{
+  "name": "FutureOS Decision Quality Benchmark",
+  "version": "0.1.0",
+  "published_at": "2026-08-31",
+  "status": "synthetic-open-benchmark",
+  "description": "Twenty-four synthetic, deterministic cases that test expected utility, Bayesian revision, binary Brier scoring, and explicit option value.",
+  "claim_boundary": "This benchmark tests mathematical and implementation correctness on synthetic cases. It does not demonstrate that FutureOS improves human judgment.",
+  "license": "CC BY 4.0",
+  "case_count": 24,
+  "task_types": [
+    "expected_utility",
+    "bayesian_revision",
+    "binary_brier_score",
+    "option_value"
+  ],
+  "scoring": {
+    "points_per_case": 1,
+    "maximum_points": 24,
+    "numeric_tolerance": 0.001,
+    "missing_answers": "incorrect",
+    "extra_answers": "ignored but reported"
+  },
+  "cases": [
+    {
+      "id": "eu-01",
+      "domain": "product",
+      "task_type": "expected_utility",
+      "prompt": "Choose the action with the highest expected utility.",
+      "inputs": {
+        "states": [
+          { "id": "high_demand", "probability": 0.35 },
+          { "id": "low_demand", "probability": 0.65 }
+        ],
+        "actions": [
+          { "id": "pilot", "utilities": { "high_demand": 80, "low_demand": 20 } },
+          { "id": "full_launch", "utilities": { "high_demand": 140, "low_demand": -30 } }
+        ]
+      },
+      "answer": { "value": "pilot", "explanation": "EU(pilot)=41; EU(full_launch)=29.5." }
+    },
+    {
+      "id": "eu-02",
+      "domain": "research",
+      "task_type": "expected_utility",
+      "prompt": "Choose the action with the highest expected utility.",
+      "inputs": {
+        "states": [
+          { "id": "funded", "probability": 0.2 },
+          { "id": "not_funded", "probability": 0.8 }
+        ],
+        "actions": [
+          { "id": "prototype", "utilities": { "funded": 100, "not_funded": 10 } },
+          { "id": "methods_paper", "utilities": { "funded": 45, "not_funded": 30 } }
+        ]
+      },
+      "answer": { "value": "methods_paper", "explanation": "EU(prototype)=28; EU(methods_paper)=33." }
+    },
+    {
+      "id": "eu-03",
+      "domain": "education",
+      "task_type": "expected_utility",
+      "prompt": "Choose the action with the highest expected utility.",
+      "inputs": {
+        "states": [
+          { "id": "high_turnout", "probability": 0.55 },
+          { "id": "low_turnout", "probability": 0.45 }
+        ],
+        "actions": [
+          { "id": "large_workshop", "utilities": { "high_turnout": 90, "low_turnout": -20 } },
+          { "id": "small_workshop", "utilities": { "high_turnout": 55, "low_turnout": 25 } }
+        ]
+      },
+      "answer": { "value": "small_workshop", "explanation": "EU(large_workshop)=40.5; EU(small_workshop)=41.5." }
+    },
+    {
+      "id": "eu-04",
+      "domain": "engineering",
+      "task_type": "expected_utility",
+      "prompt": "Choose the action with the highest expected utility.",
+      "inputs": {
+        "states": [
+          { "id": "major_gain", "probability": 0.4 },
+          { "id": "no_major_gain", "probability": 0.6 }
+        ],
+        "actions": [
+          { "id": "rewrite", "utilities": { "major_gain": 125, "no_major_gain": -25 } },
+          { "id": "incremental", "utilities": { "major_gain": 60, "no_major_gain": 15 } }
+        ]
+      },
+      "answer": { "value": "rewrite", "explanation": "EU(rewrite)=35; EU(incremental)=33." }
+    },
+    {
+      "id": "eu-05",
+      "domain": "partnership",
+      "task_type": "expected_utility",
+      "prompt": "Choose the action with the highest expected utility.",
+      "inputs": {
+        "states": [
+          { "id": "reliable", "probability": 0.7 },
+          { "id": "unreliable", "probability": 0.3 }
+        ],
+        "actions": [
+          { "id": "deep_integration", "utilities": { "reliable": 70, "unreliable": -60 } },
+          { "id": "modular_integration", "utilities": { "reliable": 45, "unreliable": 5 } }
+        ]
+      },
+      "answer": { "value": "modular_integration", "explanation": "EU(deep_integration)=31; EU(modular_integration)=33." }
+    },
+    {
+      "id": "eu-06",
+      "domain": "resource_allocation",
+      "task_type": "expected_utility",
+      "prompt": "Choose the action with the highest expected utility.",
+      "inputs": {
+        "states": [
+          { "id": "funding_arrives", "probability": 0.15 },
+          { "id": "funding_does_not_arrive", "probability": 0.85 }
+        ],
+        "actions": [
+          { "id": "hardware_first", "utilities": { "funding_arrives": 200, "funding_does_not_arrive": -20 } },
+          { "id": "software_first", "utilities": { "funding_arrives": 55, "funding_does_not_arrive": 10 } }
+        ]
+      },
+      "answer": { "value": "software_first", "explanation": "EU(hardware_first)=13; EU(software_first)=16.75." }
+    },
+    {
+      "id": "bayes-01",
+      "domain": "research",
+      "task_type": "bayesian_revision",
+      "prompt": "Return P(H|E).",
+      "inputs": { "prior_h": 0.3, "likelihood_e_given_h": 0.8, "likelihood_e_given_not_h": 0.2 },
+      "answer": { "value": 0.631579, "explanation": "0.24 / (0.24 + 0.14)." }
+    },
+    {
+      "id": "bayes-02",
+      "domain": "quality_assurance",
+      "task_type": "bayesian_revision",
+      "prompt": "Return P(H|E).",
+      "inputs": { "prior_h": 0.1, "likelihood_e_given_h": 0.9, "likelihood_e_given_not_h": 0.3 },
+      "answer": { "value": 0.25, "explanation": "0.09 / (0.09 + 0.27)." }
+    },
+    {
+      "id": "bayes-03",
+      "domain": "product",
+      "task_type": "bayesian_revision",
+      "prompt": "Return P(H|E).",
+      "inputs": { "prior_h": 0.6, "likelihood_e_given_h": 0.4, "likelihood_e_given_not_h": 0.7 },
+      "answer": { "value": 0.461538, "explanation": "0.24 / (0.24 + 0.28); this evidence lowers belief." }
+    },
+    {
+      "id": "bayes-04",
+      "domain": "education",
+      "task_type": "bayesian_revision",
+      "prompt": "Return P(H|E).",
+      "inputs": { "prior_h": 0.5, "likelihood_e_given_h": 0.65, "likelihood_e_given_not_h": 0.15 },
+      "answer": { "value": 0.8125, "explanation": "0.325 / (0.325 + 0.075)." }
+    },
+    {
+      "id": "bayes-05",
+      "domain": "operations",
+      "task_type": "bayesian_revision",
+      "prompt": "Return P(H|E).",
+      "inputs": { "prior_h": 0.2, "likelihood_e_given_h": 0.3, "likelihood_e_given_not_h": 0.05 },
+      "answer": { "value": 0.6, "explanation": "0.06 / (0.06 + 0.04)." }
+    },
+    {
+      "id": "bayes-06",
+      "domain": "forecasting",
+      "task_type": "bayesian_revision",
+      "prompt": "Return P(H|E).",
+      "inputs": { "prior_h": 0.75, "likelihood_e_given_h": 0.2, "likelihood_e_given_not_h": 0.6 },
+      "answer": { "value": 0.5, "explanation": "0.15 / (0.15 + 0.15)." }
+    },
+    {
+      "id": "brier-01",
+      "domain": "forecasting",
+      "task_type": "binary_brier_score",
+      "prompt": "Return the binary Brier score (p-o)^2.",
+      "inputs": { "probability": 0.8, "outcome": 1 },
+      "answer": { "value": 0.04, "explanation": "(0.8-1)^2." }
+    },
+    {
+      "id": "brier-02",
+      "domain": "forecasting",
+      "task_type": "binary_brier_score",
+      "prompt": "Return the binary Brier score (p-o)^2.",
+      "inputs": { "probability": 0.7, "outcome": 0 },
+      "answer": { "value": 0.49, "explanation": "(0.7-0)^2." }
+    },
+    {
+      "id": "brier-03",
+      "domain": "forecasting",
+      "task_type": "binary_brier_score",
+      "prompt": "Return the binary Brier score (p-o)^2.",
+      "inputs": { "probability": 0.35, "outcome": 1 },
+      "answer": { "value": 0.4225, "explanation": "(0.35-1)^2." }
+    },
+    {
+      "id": "brier-04",
+      "domain": "forecasting",
+      "task_type": "binary_brier_score",
+      "prompt": "Return the binary Brier score (p-o)^2.",
+      "inputs": { "probability": 0.1, "outcome": 0 },
+      "answer": { "value": 0.01, "explanation": "(0.1-0)^2." }
+    },
+    {
+      "id": "brier-05",
+      "domain": "forecasting",
+      "task_type": "binary_brier_score",
+      "prompt": "Return the binary Brier score (p-o)^2.",
+      "inputs": { "probability": 0.55, "outcome": 1 },
+      "answer": { "value": 0.2025, "explanation": "(0.55-1)^2." }
+    },
+    {
+      "id": "brier-06",
+      "domain": "forecasting",
+      "task_type": "binary_brier_score",
+      "prompt": "Return the binary Brier score (p-o)^2.",
+      "inputs": { "probability": 0.95, "outcome": 0 },
+      "answer": { "value": 0.9025, "explanation": "(0.95-0)^2." }
+    },
+    {
+      "id": "option-01",
+      "domain": "product",
+      "task_type": "option_value",
+      "prompt": "Choose the action maximizing immediate value + preserved option value - delay cost.",
+      "inputs": {
+        "actions": [
+          { "id": "launch_now", "immediate_value": 62, "preserved_option_value": 0, "delay_cost": 0 },
+          { "id": "run_pilot", "immediate_value": 48, "preserved_option_value": 22, "delay_cost": 4 }
+        ]
+      },
+      "answer": { "value": "run_pilot", "explanation": "Total values: launch_now=62; run_pilot=66." }
+    },
+    {
+      "id": "option-02",
+      "domain": "engineering",
+      "task_type": "option_value",
+      "prompt": "Choose the action maximizing immediate value + preserved option value - delay cost.",
+      "inputs": {
+        "actions": [
+          { "id": "switch_stack", "immediate_value": 75, "preserved_option_value": 0, "delay_cost": 0 },
+          { "id": "parallel_prototype", "immediate_value": 58, "preserved_option_value": 25, "delay_cost": 6 }
+        ]
+      },
+      "answer": { "value": "parallel_prototype", "explanation": "Total values: switch_stack=75; parallel_prototype=77." }
+    },
+    {
+      "id": "option-03",
+      "domain": "resource_allocation",
+      "task_type": "option_value",
+      "prompt": "Choose the action maximizing immediate value + preserved option value - delay cost.",
+      "inputs": {
+        "actions": [
+          { "id": "purchase", "immediate_value": 70, "preserved_option_value": 0, "delay_cost": 0 },
+          { "id": "lease", "immediate_value": 54, "preserved_option_value": 20, "delay_cost": 2 }
+        ]
+      },
+      "answer": { "value": "lease", "explanation": "Total values: purchase=70; lease=72." }
+    },
+    {
+      "id": "option-04",
+      "domain": "research",
+      "task_type": "option_value",
+      "prompt": "Choose the action maximizing immediate value + preserved option value - delay cost.",
+      "inputs": {
+        "actions": [
+          { "id": "publish_now", "immediate_value": 65, "preserved_option_value": 0, "delay_cost": 0 },
+          { "id": "preregister_first", "immediate_value": 57, "preserved_option_value": 18, "delay_cost": 5 }
+        ]
+      },
+      "answer": { "value": "preregister_first", "explanation": "Total values: publish_now=65; preregister_first=70." }
+    },
+    {
+      "id": "option-05",
+      "domain": "team",
+      "task_type": "option_value",
+      "prompt": "Choose the action maximizing immediate value + preserved option value - delay cost.",
+      "inputs": {
+        "actions": [
+          { "id": "hire_full_time", "immediate_value": 76, "preserved_option_value": 0, "delay_cost": 0 },
+          { "id": "short_contract", "immediate_value": 60, "preserved_option_value": 24, "delay_cost": 6 }
+        ]
+      },
+      "answer": { "value": "short_contract", "explanation": "Total values: hire_full_time=76; short_contract=78." }
+    },
+    {
+      "id": "option-06",
+      "domain": "education",
+      "task_type": "option_value",
+      "prompt": "Choose the action maximizing immediate value + preserved option value - delay cost.",
+      "inputs": {
+        "actions": [
+          { "id": "lock_curriculum", "immediate_value": 68, "preserved_option_value": 0, "delay_cost": 0 },
+          { "id": "modular_curriculum", "immediate_value": 55, "preserved_option_value": 19, "delay_cost": 3 }
+        ]
+      },
+      "answer": { "value": "modular_curriculum", "explanation": "Total values: lock_curriculum=68; modular_curriculum=71." }
+    }
+  ]
+}
