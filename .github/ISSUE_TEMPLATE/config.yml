@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Research protocol
+    url: https://futureos.space/research
+    about: Read the hypotheses, failure conditions, measurement plan, and current limitations.
+  - name: Public impact metrics
+    url: https://futureos.space/impact
+    about: Inspect the live anonymous aggregate evidence before making an adoption claim.
+  - name: Private security report
+    url: https://github.com/DresdenGman/futureos/security/policy
+    about: Do not disclose exploitable security problems in a public issue.

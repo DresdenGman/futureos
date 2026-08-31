@@ -1,0 +1,49 @@
+name: Methodology critique
+description: Identify a construct, scoring, measurement, or inference failure in FutureOS
+title: "[Method]: "
+labels: ["research"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Strong criticism is useful evidence. Please do not include private decision records, participant identities, credentials, or unpublished personal data.
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Surface
+      options:
+        - Decision Quality Score
+        - Probability Calibration Test
+        - Frame → forecast → update → resolve loop
+        - Public impact measurement
+        - Research protocol
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: claim
+    attributes:
+      label: Claim or construct at risk
+      description: Which claim, variable, score, or inference may be invalid or misleading?
+    validations:
+      required: true
+  - type: textarea
+    id: failure
+    attributes:
+      label: Failure mode
+      description: Describe a counterexample, confound, selection effect, gaming strategy, or measurement error.
+    validations:
+      required: true
+  - type: textarea
+    id: test
+    attributes:
+      label: Discriminating test
+      description: What observation or experiment would distinguish the current explanation from an alternative?
+    validations:
+      required: true
+  - type: textarea
+    id: sources
+    attributes:
+      label: Relevant sources
+      description: Link primary research, data, standards, or a minimal example when available.
+

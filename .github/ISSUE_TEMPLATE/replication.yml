@@ -1,0 +1,43 @@
+name: Replication or independent test
+description: Report an independent attempt to reproduce or test a FutureOS claim
+title: "[Replication]: "
+labels: ["replication"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Report null and negative results. Remove participant identities, private decision content, credentials, and sensitive data before posting.
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit tested
+      placeholder: "v1.0.0 or commit SHA"
+    validations:
+      required: true
+  - type: textarea
+    id: question
+    attributes:
+      label: Question tested
+      description: State the hypothesis or behavior you attempted to reproduce.
+    validations:
+      required: true
+  - type: textarea
+    id: method
+    attributes:
+      label: Method and sample
+      description: Describe the procedure, sample definition, exclusions, and measurement window without exposing personal data.
+    validations:
+      required: true
+  - type: textarea
+    id: result
+    attributes:
+      label: Result
+      description: Report denominators, uncertainty, null results, and failures—not only positive outcomes.
+    validations:
+      required: true
+  - type: textarea
+    id: artifacts
+    attributes:
+      label: Reproducible artifacts
+      description: Link code, aggregate data, preregistration, screenshots, or a public report when available.
+
