@@ -70,7 +70,7 @@ Individual names, profile URLs and message contents are kept outside the public 
 | 2026-08-30 | Continuous integration | Public `main` build completed successfully at commit `6681ffa` | https://github.com/DresdenGman/futureos/actions/runs/33358060946 |
 | 2026-08-30 | Versioned release | Public non-draft `v1.0.0` release, published 2026-08-31 04:49:26 UTC | https://github.com/DresdenGman/futureos/releases/tag/v1.0.0 |
 | 2026-08-30 | Research feedback intake | Public forms for methodology critiques and independent replications; CI passed at commit `a06b179` | https://github.com/DresdenGman/futureos/issues/new/choose |
-| 2026-08-31 | Decision Quality Benchmark v0.1 | 24 synthetic cases across expected utility, Bayesian revision, binary Brier scoring and option value; executable scorer recomputes the answer key; lint and production build passed locally | Deployment pending; source retained in `research/decision-quality-benchmark/` |
+| 2026-08-31 | Decision Quality Benchmark v0.1 | 24 synthetic cases across expected utility, Bayesian revision, binary Brier scoring and option value; executable scorer recomputes the answer key; reference implementation scored 24/24; public download returned HTTP 200 | https://futureos.space/research/decision-quality-benchmark-v0.1.json |
 | 2026-08-31 | Preregistration draft | Prospective hypotheses, exclusions, analysis, missing-data, stopping, privacy and deviations rules written before Phase B data collection | Draft only; not submitted and not an approved study |
 | 2026-08-31 | Six-week evidence cadence | Seven dated checkpoints locked from baseline through the public learning report | `research/SIX_WEEK_EVIDENCE_CADENCE.md` |
 
