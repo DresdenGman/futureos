@@ -1,0 +1,1 @@
+export const DELETE_ALL_DATA_PHRASE = 'DELETE ALL MY DATA';

@@ -46,6 +46,11 @@ export default function PrivacyPage() {
             title="Scope"
             copy="FutureOS is a thinking and record-keeping tool. It is not medical, legal, financial-investment or crisis advice. Sensitive decisions should use qualified professional guidance and should not be entered into a product unless the user is comfortable storing them."
           />
+          <PrivacySection
+            number="06"
+            title="Deletion controls"
+            copy="Signed-in users can permanently delete one decision and its belief history from the decision page, or delete every saved decision, update and resolution from the workspace. Account-data deletion also clears the anonymous measurement cookie on that device. Previously counted public-tool events are not account records and cannot be linked back to the signed-in user."
+          />
         </div>
       </div>
     </div>

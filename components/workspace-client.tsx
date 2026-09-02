@@ -18,6 +18,7 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import type { Decision } from '@/lib/types';
+import { DeleteAccountDataDialog } from '@/components/delete-account-data-dialog';
 
 type Filter = 'all' | 'open' | 'resolved';
 
@@ -27,6 +28,7 @@ export function WorkspaceClient({ displayName }: { displayName: string }) {
   const [error, setError] = useState('');
   const [filter, setFilter] = useState<Filter>('all');
   const [query, setQuery] = useState('');
+  const [notice, setNotice] = useState('');
   const [now] = useState(() => Date.now());
 
   const load = useCallback(async () => {
@@ -77,6 +79,12 @@ export function WorkspaceClient({ displayName }: { displayName: string }) {
 
   return (
     <div className="page-shell space-y-6 py-8 pb-20">
+      {notice && (
+        <output className="flex items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-bold text-emerald-900">
+          <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-700" />
+          {notice}
+        </output>
+      )}
       <section className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="eyebrow">Decision workspace</p>
@@ -240,6 +248,26 @@ export function WorkspaceClient({ displayName }: { displayName: string }) {
             >
               View decision memory <ArrowRight className="h-3.5 w-3.5" />
             </Link>
+          </div>
+          <div className="rounded-[12px] border border-slate-200 bg-white p-5">
+            <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">
+              Your data
+            </p>
+            <p className="mt-3 text-sm font-bold text-slate-900">
+              You control your decision memory.
+            </p>
+            <p className="mt-2 text-xs leading-5 text-slate-500">
+              Individual records can be deleted from their detail page, or you
+              can permanently remove every saved decision here.
+            </p>
+            <DeleteAccountDataDialog
+              onDeleted={() => {
+                setDecisions([]);
+                setNotice(
+                  'All decision records and belief updates associated with your FutureOS identity were deleted.',
+                );
+              }}
+            />
           </div>
         </aside>
       </section>

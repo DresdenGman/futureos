@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { DeleteDecisionDialog } from '@/components/delete-decision-dialog';
 import { decisionScore } from '@/lib/decision-math';
 import type { Decision } from '@/lib/types';
 
@@ -582,6 +583,17 @@ export function DecisionDetail({
               If nothing could change the answer, this is a commitment—not a
               forecast.
             </p>
+          </div>
+          <div className="rounded-[12px] border border-rose-200 bg-rose-50/60 p-5">
+            <p className="text-[10px] font-black uppercase tracking-[0.16em] text-rose-700">
+              Data control
+            </p>
+            <p className="mt-2 text-xs leading-5 text-rose-900/65">
+              Remove this record and its complete belief history permanently.
+            </p>
+            <div className="mt-4">
+              <DeleteDecisionDialog id={decision.id} title={decision.title} />
+            </div>
           </div>
         </aside>
       </section>

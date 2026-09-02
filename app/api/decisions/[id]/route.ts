@@ -9,6 +9,11 @@ import {
 } from '@/lib/db';
 import type { BeliefUpdate } from '@/lib/types';
 import { resolveDecisionSchema } from '@/lib/validation';
+import {
+  deleteDecisionRequestSchema,
+  deleteOwnedDecision,
+  isSameOriginDestructiveRequest,
+} from '@/lib/data-deletion';
 
 export const dynamic = 'force-dynamic';
 
@@ -110,4 +115,58 @@ export async function PATCH(request: Request, context: RouteContext) {
     );
   }
   return NextResponse.json({ ok: true });
+}
+
+export async function DELETE(request: Request, context: RouteContext) {
+  const user = await getChatGPTUser();
+  if (!user)
+    return NextResponse.json({ error: 'Sign in required.' }, { status: 401 });
+
+  if (!isSameOriginDestructiveRequest(request))
+    return NextResponse.json({ error: 'Request rejected.' }, { status: 403 });
+
+  await ensureSchema();
+  try {
+    await enforceWriteLimit(user.userId, 20);
+  } catch {
+    return NextResponse.json(
+      { error: 'Too many changes. Please wait a minute.' },
+      { status: 429 },
+    );
+  }
+
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json(
+      { error: 'Invalid request body.' },
+      { status: 400 },
+    );
+  }
+
+  const parsed = deleteDecisionRequestSchema.safeParse(body);
+  if (!parsed.success)
+    return NextResponse.json(
+      { error: 'Type the complete decision title.' },
+      { status: 400 },
+    );
+
+  const { id } = await context.params;
+  const result = await deleteOwnedDecision(
+    getDatabase(),
+    user.userId,
+    id,
+    parsed.data.confirmation,
+  );
+
+  if (result.status === 'not_found')
+    return NextResponse.json({ error: 'Decision not found.' }, { status: 404 });
+  if (result.status === 'confirmation_mismatch')
+    return NextResponse.json(
+      { error: 'The confirmation title does not match.' },
+      { status: 400 },
+    );
+
+  return NextResponse.json({ ok: true, ...result });
 }

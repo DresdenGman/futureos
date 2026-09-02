@@ -10,6 +10,7 @@
     "build": "vinext build",
     "start": "wrangler dev --config dist/server/wrangler.json",
     "lint": "oxlint",
+    "test:data-deletion": "node --experimental-strip-types --test scripts/data-deletion.test.mjs",
     "format": "oxfmt",
     "benchmark:decision-quality": "node scripts/score-decision-quality-benchmark.mjs",
     "db:generate": "drizzle-kit generate"

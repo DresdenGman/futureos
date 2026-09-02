@@ -9,6 +9,7 @@
     "esModuleInterop": true,
     "module": "esnext",
     "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
     "types": ["node", "@cloudflare/workers-types", "vinext/types"],
     "resolveJsonModule": true,
     "isolatedModules": true,
