@@ -37,6 +37,7 @@ export const publicEventSchema = z.object({
       'lesswrong',
       'metaculus',
       'github',
+      'challenge',
       'other',
     ])
     .default('direct'),

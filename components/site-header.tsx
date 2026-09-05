@@ -7,6 +7,7 @@ import {
 } from '@/app/chatgpt-auth';
 
 const productLinks = [
+  { href: '/challenge', label: 'Field test' },
   { href: '/workspace', label: 'Workspace' },
   { href: '/map', label: 'Decision map' },
   { href: '/memory', label: 'Memory' },

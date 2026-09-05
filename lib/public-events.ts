@@ -8,6 +8,7 @@ export type PublicSource =
   | 'lesswrong'
   | 'metaculus'
   | 'github'
+  | 'challenge'
   | 'other';
 
 const knownSources = new Set<PublicSource>([
@@ -20,6 +21,7 @@ const knownSources = new Set<PublicSource>([
   'lesswrong',
   'metaculus',
   'github',
+  'challenge',
   'other',
 ]);
 

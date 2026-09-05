@@ -8,6 +8,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/memory',
     '/privacy',
     '/tools',
+    '/challenge',
     '/tools/decision-quality',
     '/tools/calibration',
     '/research',

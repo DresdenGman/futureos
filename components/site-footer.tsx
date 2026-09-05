@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { ExternalLink } from 'lucide-react';
 
 const links = [
+  { href: '/challenge', label: '7-day field test' },
   { href: '/tools', label: 'Open instruments' },
   { href: '/research', label: 'Research protocol' },
   { href: '/impact', label: 'Public impact' },

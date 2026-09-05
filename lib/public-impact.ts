@@ -51,6 +51,7 @@ const sourceLabels: Record<string, string> = {
   lesswrong: 'LessWrong',
   metaculus: 'Metaculus',
   github: 'GitHub',
+  challenge: '7-day field test',
   other: 'Other',
 };
 

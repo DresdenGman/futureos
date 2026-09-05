@@ -50,6 +50,7 @@ Distribution is recorded separately from independent validation. Founder posts, 
 | Date | Channel | Artifact | Baseline at first verification | Public link |
 |---|---|---|---|---|
 | 2026-08-30 | LinkedIn | Founder-authored public pilot launch; canonical product link in the post and public source link in the first comment | 1 impression; 0 external reactions; 0 external comments; 0 verified activations | https://www.linkedin.com/feed/update/urn:li:share:7500075823157186561/ |
+| 2026-09-05 | LinkedIn | Read-only founder-post recheck | 90 impressions; 1 founder reaction; 1 founder comment; 0 verified external post engagement; 0 verified activations | https://www.linkedin.com/feed/update/urn:li:share:7500075823157186561/ |
 
 ## Outreach activity
 
@@ -58,6 +59,7 @@ Individual names, profile URLs and message contents are kept outside the public 
 | Date | Channel | Segment | Invited | Personalized | Pending | Accepted | Activated |
 |---|---|---|---:|---:|---:|---:|---:|
 | 2026-08-31 | LinkedIn direct outreach | California applied-math, data-science, computer-science and quantitative students | 5 | 3 | 5 | 0 | 0 |
+| 2026-09-05 | LinkedIn direct outreach | FutureOS-only reconciliation on a shared account | 5 | 3 | 2 confirmed; 1 original invitation unresolved | 2 verified | 0 |
 
 ## Verified public infrastructure
 
